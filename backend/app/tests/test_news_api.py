@@ -120,7 +120,11 @@ async def test_sync_news_endpoint(
     async def fake_sync() -> SyncSummary:
         return SyncSummary(sources=3, articles=10, created=8, skipped=1, errors=1)
 
+    async def fake_index() -> int:
+        return 5
+
     monkeypatch.setattr(news_api, "sync_news", fake_sync)
+    monkeypatch.setattr(news_api, "index_news", fake_index)
 
     response = await client.post("/news/sync")
 
@@ -130,3 +134,4 @@ async def test_sync_news_endpoint(
     assert data["created"] == 8
     assert data["skipped"] == 1
     assert data["errors"] == 1
+    assert data["indexed"] == 5
