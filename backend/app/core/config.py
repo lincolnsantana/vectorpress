@@ -21,6 +21,8 @@ class Settings:
     llm_provider: str = getenv("LLM_PROVIDER", "groq")
     llm_model: str = getenv("LLM_MODEL", "openai/gpt-oss-20b")
     groq_api_key: str = getenv("GROQ_API_KEY", "")
+    telegram_token: str = getenv("TELEGRAM_TOKEN", "")
+    telegram_webhook_url: str = getenv("TELEGRAM_WEBHOOK_URL", "")
 
 
 settings = Settings()
