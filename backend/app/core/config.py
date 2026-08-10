@@ -15,6 +15,9 @@ class Settings:
     postgres_user: str = getenv("POSTGRES_USER", "ai_pulse")
     postgres_password: str = getenv("POSTGRES_PASSWORD", "ai_pulse")
     postgres_port: int = int(getenv("POSTGRES_PORT", "5432"))
+    embedding_provider: str = getenv("EMBEDDING_PROVIDER", "local")
+    embedding_model: str = getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+    openai_api_key: str = getenv("OPENAI_API_KEY", "")
 
 
 settings = Settings()
