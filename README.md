@@ -1,6 +1,6 @@
 # AI Pulse
 
-AI Pulse é uma API para monitorar notícias sobre Inteligência Artificial e, nas próximas sprints, apoiar consultas inteligentes com RAG.
+AI Pulse é uma API para monitorar notícias sobre Inteligência Artificial e responder perguntas sobre elas usando Retrieval-Augmented Generation (RAG) com base vetorial no PostgreSQL (pgvector).
 
 ## Sprint 01 - Fundação
 
@@ -50,6 +50,60 @@ curl "http://localhost:8000/news?limit=10&offset=0"
 curl http://localhost:8000/news/{id}
 ```
 
+## Sprint 03 - Base Vetorial e RAG
+
+Nesta etapa o projeto entrega:
+
+- fragmentação de conteúdo em chunks (LangChain RecursiveCharacterTextSplitter);
+- geração de embeddings (sentence-transformers local ou OpenAI API);
+- armazenamento vetorial no PostgreSQL (pgvector, tabela `embeddings`);
+- indexação incremental: notícias novas são fragmentadas e embedadas durante o `POST /news/sync`;
+- busca vetorial por similaridade cosseno (top 5 chunks);
+- geração de respostas via LLM (Groq API) usando apenas o contexto recuperado;
+- endpoint `POST /ask`.
+
+### Consulta RAG
+
+```bash
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "O que aconteceu com IA recentemente?"}'
+```
+
+Resposta com a resposta e as fontes citadas:
+
+```json
+{
+  "answer": "…",
+  "sources": [
+    {"title": "…", "url": "https://…", "source": "OpenAI Blog"}
+  ]
+}
+```
+
+### Pipeline RAG
+
+```
+Pergunta
+↓
+Embedding da pergunta
+↓
+Busca vetorial (pgvector, top 5 chunks)
+↓
+Contexto
+↓
+LLM (Groq)
+↓
+Resposta + fontes
+```
+
+Quando não há contexto suficiente, a resposta é: *"Não encontrei informações suficientes para responder esta pergunta."*
+
+### Configuração de IA
+
+- `EMBEDDING_PROVIDER=local` usa sentence-transformers localmente (modelo `all-MiniLM-L6-v2`, 384 dimensões). `EMBEDDING_PROVIDER=openai` usa a API da OpenAI.
+- `LLM_PROVIDER=groq` usa a Groq API (requer `GROQ_API_KEY`).
+
 ## Requisitos
 
 - Docker e Docker Compose;
@@ -70,6 +124,12 @@ Variáveis disponíveis:
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
 - `POSTGRES_PORT`
+- `EMBEDDING_PROVIDER`
+- `EMBEDDING_MODEL`
+- `OPENAI_API_KEY`
+- `LLM_PROVIDER`
+- `LLM_MODEL`
+- `GROQ_API_KEY`
 
 ## Como executar com Docker
 
@@ -116,6 +176,7 @@ pytest
 | POST   | `/news/sync`| Sincronização manual das notícias    |
 | GET    | `/news`     | Lista paginada de notícias           |
 | GET    | `/news/{id}`| Detalhe de uma notícia               |
+| POST   | `/ask`      | Consulta RAG sobre as notícias       |
 
 ### `GET /`
 
@@ -175,6 +236,18 @@ Exemplo de resposta:
 
 Retorna o detalhe completo de uma notícia, incluindo o `content`. Retorna `404` se o ID não existir.
 
+### `POST /ask`
+
+Recebe uma pergunta e responde com base apenas nas notícias armazenadas (RAG).
+
+Corpo:
+
+```json
+{"question": "O que aconteceu com IA recentemente?"}
+```
+
+Resposta com `answer` e `sources` (URLs das notícias utilizadas como contexto).
+
 ## Estrutura atual
 
 ```text
@@ -184,6 +257,7 @@ Retorna o detalhe completo de uma notícia, incluindo o `content`. Retorna `404`
 │   │   ├── api/
 │   │   ├── core/
 │   │   ├── database/
+│   │   ├── rag/
 │   │   ├── rss/
 │   │   ├── schemas/
 │   │   └── tests/
@@ -196,4 +270,4 @@ Retorna o detalhe completo de uma notícia, incluindo o `content`. Retorna `404`
 
 ## Próximos passos
 
-As próximas sprints vão adicionar base vetorial com RAG, Telegram, frontend e deploy.
+As próximas sprints vão adicionar bot Telegram, automação com n8n, frontend e deploy.
