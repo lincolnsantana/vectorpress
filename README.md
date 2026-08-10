@@ -104,6 +104,39 @@ Quando não há contexto suficiente, a resposta é: *"Não encontrei informaçõ
 - `EMBEDDING_PROVIDER=local` usa sentence-transformers localmente (modelo `all-MiniLM-L6-v2`, 384 dimensões). `EMBEDDING_PROVIDER=openai` usa a API da OpenAI.
 - `LLM_PROVIDER=groq` usa a Groq API (requer `GROQ_API_KEY`).
 
+## Sprint 04 - Bot Telegram
+
+Nesta etapa o projeto entrega:
+
+- bot do Telegram integrado à API via webhook (`POST /telegram/webhook`);
+- comando `/today` — últimas 5 manchetes com links;
+- comando `/list` — lista paginada de notícias recentes;
+- comando `/ask <pergunta>` — consulta RAG (`POST /ask`) com fontes;
+- tratamento de erros nos comandos (falhas graciosas).
+
+### Configuração do bot
+
+1. Crie um bot com o [@BotFather](https://t.me/BotFather) e copie o token.
+2. Adicione no `.env`:
+   - `TELEGRAM_TOKEN` — token do bot;
+   - `TELEGRAM_WEBHOOK_URL` — URL pública que o Telegram chamará (ex: `https://seudominio.com/telegram/webhook`).
+3. Suba a aplicação e registre o webhook:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+  -d "url=<TELEGRAM_WEBHOOK_URL>"
+```
+
+Se `TELEGRAM_TOKEN` não estiver definido, a API sobe normalmente e o webhook responde `503` até o bot ser configurado.
+
+### Comandos
+
+| Comando         | Descrição                                    |
+|-----------------|----------------------------------------------|
+| `/today`        | Últimas 5 manchetes com links                |
+| `/list [página]`| Lista paginada de notícias recentes (10 por página) |
+| `/ask <pergunta>` | Consulta RAG sobre as notícias armazenadas  |
+
 ## Requisitos
 
 - Docker e Docker Compose;
@@ -130,6 +163,8 @@ Variáveis disponíveis:
 - `LLM_PROVIDER`
 - `LLM_MODEL`
 - `GROQ_API_KEY`
+- `TELEGRAM_TOKEN`
+- `TELEGRAM_WEBHOOK_URL`
 
 ## Como executar com Docker
 
@@ -177,6 +212,7 @@ pytest
 | GET    | `/news`     | Lista paginada de notícias           |
 | GET    | `/news/{id}`| Detalhe de uma notícia               |
 | POST   | `/ask`      | Consulta RAG sobre as notícias       |
+| POST   | `/telegram/webhook` | Recebe atualizações do bot Telegram |
 
 ### `GET /`
 
@@ -248,6 +284,10 @@ Corpo:
 
 Resposta com `answer` e `sources` (URLs das notícias utilizadas como contexto).
 
+### `POST /telegram/webhook`
+
+Recebe as atualizações do bot Telegram e processa os comandos `/today`, `/list` e `/ask`. Responde `200` quando o bot está configurado (`TELEGRAM_TOKEN` válido) e `503` caso contrário.
+
 ## Estrutura atual
 
 ```text
@@ -260,6 +300,7 @@ Resposta com `answer` e `sources` (URLs das notícias utilizadas como contexto).
 │   │   ├── rag/
 │   │   ├── rss/
 │   │   ├── schemas/
+│   │   ├── telegram/
 │   │   └── tests/
 │   ├── requirements.txt
 │   └── requirements-dev.txt
@@ -270,4 +311,4 @@ Resposta com `answer` e `sources` (URLs das notícias utilizadas como contexto).
 
 ## Próximos passos
 
-As próximas sprints vão adicionar bot Telegram, automação com n8n, frontend e deploy.
+As próximas sprints vão adicionar automação com n8n, frontend e deploy.
