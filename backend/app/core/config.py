@@ -19,7 +19,7 @@ class Settings:
     embedding_model: str = getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
     openai_api_key: str = getenv("OPENAI_API_KEY", "")
     llm_provider: str = getenv("LLM_PROVIDER", "groq")
-    llm_model: str = getenv("LLM_MODEL", "llama3-8b-8192")
+    llm_model: str = getenv("LLM_MODEL", "openai/gpt-oss-20b")
     groq_api_key: str = getenv("GROQ_API_KEY", "")
 
 
