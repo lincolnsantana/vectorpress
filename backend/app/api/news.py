@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.connection import get_session
 from app.database.models import News
+from app.rag.indexer import index_news
 from app.rss.sync import sync_news
 from app.schemas.news import NewsDetailOut, NewsListItem, NewsListOut, SyncResponse
 
@@ -15,12 +16,14 @@ router = APIRouter(prefix="/news", tags=["news"])
 @router.post("/sync", response_model=SyncResponse, status_code=status.HTTP_200_OK)
 async def sync_news_endpoint() -> SyncResponse:
     summary = await sync_news()
+    indexed = await index_news()
     return SyncResponse(
         sources=summary.sources,
         articles=summary.articles,
         created=summary.created,
         skipped=summary.skipped,
         errors=summary.errors,
+        indexed=indexed,
     )
 
 

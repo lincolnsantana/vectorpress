@@ -33,3 +33,4 @@ class SyncResponse(BaseModel):
     created: int
     skipped: int
     errors: int
+    indexed: int

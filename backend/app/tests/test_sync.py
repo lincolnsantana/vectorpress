@@ -75,10 +75,10 @@ async def test_sync_news_creates_and_skips_duplicates(
 
     summary = await sync_news(session=session)
 
-    assert summary.sources == 3
-    assert summary.articles == 9
+    assert summary.sources == len(SOURCES)
+    assert summary.articles == len(SOURCES) * 3
     assert summary.created == 2
-    assert summary.skipped == 7
+    assert summary.skipped == len(SOURCES) * 3 - 2
     assert summary.errors == 0
     assert session.committed
     assert len(session.added) == 2
@@ -93,8 +93,8 @@ async def test_sync_news_tolerates_source_failure(
 
     summary = await sync_news(session=session)
 
-    assert summary.sources == 3
+    assert summary.sources == len(SOURCES)
     assert summary.articles == 3
     assert summary.created == 3
-    assert summary.errors == 2
+    assert summary.errors == len(SOURCES) - 1
     assert session.committed
