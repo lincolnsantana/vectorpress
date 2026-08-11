@@ -17,6 +17,7 @@ def make_chunk(**overrides: object) -> RetrievedChunk:
         "title": "Notícia de teste",
         "url": "https://example.com/artigo",
         "source": "OpenAI Blog",
+        "published_at": None,
     }
     values.update(overrides)
     return RetrievedChunk(**values)  # type: ignore[arg-type]
@@ -63,3 +64,28 @@ async def test_ask_returns_answer_with_sources(
     assert len(data["sources"]) == 1
     assert data["sources"][0]["url"] == "https://example.com/artigo"
     assert data["sources"][0]["title"] == "Notícia de teste"
+
+
+async def test_ask_deduplicates_sources_by_url(
+    client: httpx.AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    same_url = "https://example.com/mesmo-artigo"
+    context = [make_chunk(url=same_url), make_chunk(url=same_url, title="Outro título")]
+
+    class FakeService:
+        async def ask(self, session: object, question: str) -> tuple[str, list[RetrievedChunk]]:
+            return "Resposta.", context
+
+    app.dependency_overrides[get_session] = FakeSession
+    app.dependency_overrides[rag_api.get_rag_service] = lambda: FakeService()
+    try:
+        response = await client.post("/ask", json={"question": "O que houve?"})
+    finally:
+        app.dependency_overrides.pop(get_session, None)
+        app.dependency_overrides.pop(rag_api.get_rag_service, None)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["answer"] == "Resposta."
+    assert [source["url"] for source in data["sources"]] == [same_url]

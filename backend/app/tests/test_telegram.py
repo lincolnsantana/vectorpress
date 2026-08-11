@@ -27,15 +27,18 @@ def make_item(title: str = "Notícia de teste") -> NewsListItem:
     )
 
 
-def make_chunk() -> RetrievedChunk:
-    return RetrievedChunk(
-        chunk_id=uuid.uuid4(),
-        text="Fragmento relevante.",
-        news_id=uuid.uuid4(),
-        title="Notícia de teste",
-        url="https://example.com/artigo",
-        source="OpenAI Blog",
-    )
+def make_chunk(**overrides: object) -> RetrievedChunk:
+    values: dict[str, object] = {
+        "chunk_id": uuid.uuid4(),
+        "text": "Fragmento relevante.",
+        "news_id": uuid.uuid4(),
+        "title": "Notícia de teste",
+        "url": "https://example.com/artigo",
+        "source": "OpenAI Blog",
+        "published_at": None,
+    }
+    values.update(overrides)
+    return RetrievedChunk(**values)  # type: ignore[arg-type]
 
 
 class FakeMessage:
@@ -110,6 +113,16 @@ def test_format_ask_includes_answer_and_sources() -> None:
     assert "Resposta." in text
     assert "Fontes:" in text
     assert "https://example.com/artigo" in text
+
+
+def test_format_ask_deduplicates_sources_by_url() -> None:
+    same_url = "https://example.com/artigo"
+    chunks = [make_chunk(), make_chunk(title="Outro título")]
+
+    text = commands.format_ask("O que houve?", "Resposta.", chunks)
+
+    assert text.count(same_url) == 1
+    assert text.count("Notícia de teste") == 1
 
 
 def test_parse_page_defaults_to_one() -> None:
