@@ -4,7 +4,10 @@ from app.core.config import settings
 from app.rag.retriever import RetrievedChunk
 
 SYSTEM_PROMPT = (
+    "Você é um assistente especializado em notícias de Inteligência Artificial. "
     "Responda APENAS usando o contexto fornecido. "
+    "Quando a pergunta buscar um tema específico, priorize os trechos mais recentes "
+    "e as fontes mais relevantes ao tema solicitado. "
     "Se o contexto for insuficiente, diga: "
     "'Não encontrei informações suficientes para responder esta pergunta.' "
     "NÃO use conhecimento externo."
@@ -16,17 +19,22 @@ class Generator:
         self._api_key = api_key
         self._model = model
 
+    @staticmethod
+    def _format_source(chunk: RetrievedChunk) -> str:
+        date = chunk.published_at.strftime("%d/%m/%Y %H:%M") if chunk.published_at else ""
+        meta = " · ".join(filter(None, [chunk.source, date]))
+        return f"Título: {chunk.title}\n{meta}\nURL: {chunk.url}\n{chunk.text}"
+
     async def generate(self, question: str, context: list[RetrievedChunk]) -> str:
         if not context:
             return "Não encontrei informações suficientes para responder esta pergunta."
 
         context_text = "\n\n".join(
-            f"Fonte: {chunk.url}\n{chunk.text}" for chunk in context
+            self._format_source(chunk) for chunk in context
         )
         user_prompt = (
             f"Contexto:\n{context_text}\n\n"
-            f"Pergunta: {question}\n\n"
-            "Cite as fontes utilizadas (URLs) ao final da resposta."
+            f"Pergunta: {question}"
         )
 
         async with httpx.AsyncClient(timeout=httpx.Timeout(60.0)) as client:

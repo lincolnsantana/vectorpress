@@ -39,6 +39,7 @@ def make_row(**overrides: object) -> Row:
         "title": "Notícia de teste",
         "url": "https://example.com/artigo",
         "source": "OpenAI Blog",
+        "published_at": None,
     }
     values.update(overrides)
     return Row(
@@ -48,6 +49,7 @@ def make_row(**overrides: object) -> Row:
         values["title"],
         values["url"],
         values["source"],
+        values["published_at"],
     )
 
 
