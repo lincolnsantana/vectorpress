@@ -62,8 +62,14 @@ def format_ask(
     chunks: Sequence[RetrievedChunk],
 ) -> str:
     parts = [f"Pergunta: {question}", "", answer]
-    if chunks:
-        sources = [f"- {chunk.title}\n  {chunk.url}" for chunk in chunks]
+    sources: list[str] = []
+    seen_urls: set[str] = set()
+    for chunk in chunks:
+        if chunk.url in seen_urls:
+            continue
+        seen_urls.add(chunk.url)
+        sources.append(f"- {chunk.title}\n  {chunk.url}")
+    if sources:
         parts += ["", "Fontes:", *sources]
     return "\n".join(parts)
 

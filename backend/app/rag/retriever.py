@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -15,6 +16,7 @@ class RetrievedChunk:
     title: str
     url: str
     source: str
+    published_at: datetime | None
 
 
 class Retriever:
@@ -34,6 +36,7 @@ class Retriever:
                 News.title,
                 News.url,
                 News.source,
+                News.published_at,
             )
             .join(Embedding, Embedding.chunk_id == Chunk.id)
             .join(News, News.id == Chunk.news_id)
@@ -49,6 +52,7 @@ class Retriever:
                 title=row[3],
                 url=row[4],
                 source=row[5],
+                published_at=row[6],
             )
             for row in rows
         ]

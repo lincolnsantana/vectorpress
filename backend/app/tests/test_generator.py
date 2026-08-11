@@ -14,6 +14,7 @@ def make_chunk(**overrides: object) -> RetrievedChunk:
         "title": "Anthropic lança modelo",
         "url": "https://www.anthropic.com/news/model",
         "source": "Anthropic Blog",
+        "published_at": None,
     }
     values.update(overrides)
     return RetrievedChunk(**values)  # type: ignore[arg-type]
@@ -62,4 +63,9 @@ async def test_generate_calls_llm_with_context(monkeypatch: pytest.MonkeyPatch) 
     assert isinstance(body, dict)
     assert body["model"] == "llama3-8b-8192"
     assert body["messages"][0]["content"] == SYSTEM_PROMPT
-    assert "https://www.anthropic.com/news/model" in body["messages"][1]["content"]
+    user_content = body["messages"][1]["content"]
+    assert isinstance(user_content, str)
+    assert "https://www.anthropic.com/news/model" in user_content
+    assert "Título: Anthropic lança modelo" in user_content
+    assert "Anthropic Blog" in user_content
+    assert "Cite as fontes utilizadas" not in user_content

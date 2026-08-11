@@ -26,10 +26,13 @@ async def ask_question(
     service: RAGService = Depends(get_rag_service),
 ) -> AskResponse:
     answer, context = await service.ask(session, payload.question)
-    return AskResponse(
-        answer=answer,
-        sources=[
+    sources: list[SourceOut] = []
+    seen_urls: set[str] = set()
+    for chunk in context:
+        if chunk.url in seen_urls:
+            continue
+        seen_urls.add(chunk.url)
+        sources.append(
             SourceOut(title=chunk.title, url=chunk.url, source=chunk.source)
-            for chunk in context
-        ],
-    )
+        )
+    return AskResponse(answer=answer, sources=sources)
