@@ -17,7 +17,7 @@ Nesta etapa o projeto entrega:
 Nesta etapa o projeto entrega:
 
 - ingestão de notícias via RSS (feedparser + httpx);
-- fontes iniciais: OpenAI Blog, Anthropic Blog, TechCrunch AI, Google AI Blog, DeepMind Blog, Microsoft AI Blog, MIT Tech Review AI, The Verge AI, Hugging Face Blog, Meta AI Blog, arXiv cs.AI, VentureBeat AI, Wired AI e 404 Media AI;
+- fontes iniciais: OpenAI Blog, Anthropic Blog, TechCrunch AI, Google AI Blog, DeepMind Blog, Microsoft AI Blog, MIT Tech Review AI, The Verge AI, Hugging Face Blog, Meta AI Blog, VentureBeat AI, Wired AI e 404 Media AI;
 - prevenção de duplicatas por URL;
 - persistência das notícias no PostgreSQL;
 - endpoint `POST /news/sync`;
@@ -58,7 +58,10 @@ Nesta etapa o projeto entrega:
 - geração de embeddings (sentence-transformers local ou OpenAI API);
 - armazenamento vetorial no PostgreSQL (pgvector, tabela `embeddings`);
 - indexação incremental: notícias novas são fragmentadas e embedadas durante o `POST /news/sync`;
+- purga automática: o sync remove notícias de fontes que saíram de `sources.py` (ex.: arXiv removido);
+- preload do modelo de embeddings na inicialização da API (reduz o tempo de resposta do `/ask`);
 - busca vetorial por similaridade cosseno (top 5 chunks);
+- filtro de recência: o `/ask` considera apenas notícias publicadas na janela configurável `RAG_MAX_AGE_DAYS` (padrão: 3 dias);
 - geração de respostas via LLM (Groq API) usando apenas o contexto recuperado;
 - endpoint `POST /ask`.
 
@@ -103,6 +106,7 @@ Quando não há contexto suficiente, a resposta é: *"Não encontrei informaçõ
 
 - `EMBEDDING_PROVIDER=local` usa sentence-transformers localmente (modelo `all-MiniLM-L6-v2`, 384 dimensões). `EMBEDDING_PROVIDER=openai` usa a API da OpenAI.
 - `LLM_PROVIDER=groq` usa a Groq API (requer `GROQ_API_KEY`).
+- `RAG_MAX_AGE_DAYS` define quantos dias de recência o `/ask` considera (padrão `3`). Notícias mais antigas que essa janela são ignoradas na busca vetorial.
 
 ## Sprint 04 - Bot Telegram
 
@@ -128,6 +132,8 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
 ```
 
 Se `TELEGRAM_TOKEN` não estiver definido, a API sobe normalmente e o webhook responde `503` até o bot ser configurado.
+
+Durante o `/ask`, o bot exibe o indicador de digitação ("Digitando...") enquanto a resposta é gerada.
 
 ### Comandos
 

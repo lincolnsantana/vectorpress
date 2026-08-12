@@ -1,5 +1,7 @@
 import uuid
 
+from sqlalchemy.sql.expression import Select
+
 from app.rag.retriever import RetrievedChunk, Retriever
 
 
@@ -22,9 +24,9 @@ class Result:
 class FakeSession:
     def __init__(self, rows: list[Row]) -> None:
         self.rows = rows
-        self.executed_statement: object | None = None
+        self.executed_statement: Select | None = None
 
-    async def execute(self, statement: object) -> Result:
+    async def execute(self, statement: Select) -> Result:
         self.executed_statement = statement
         limit = getattr(statement, "_limit", None)
         rows = self.rows[:limit] if limit else self.rows
@@ -80,3 +82,13 @@ async def test_retrieve_returns_empty_when_no_matches() -> None:
     results = await Retriever().retrieve(session, [0.1] * 384)
 
     assert results == []
+
+
+async def test_retrieve_filters_by_recency_window() -> None:
+    session = FakeSession([make_row()])
+
+    await Retriever(max_age_days=3).retrieve(session, [0.1] * 384)
+
+    statement = session.executed_statement
+    assert statement is not None
+    assert statement.whereclause is not None

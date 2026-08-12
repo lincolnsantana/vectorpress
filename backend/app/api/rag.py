@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.database.connection import get_session
 from app.rag.ask import RAGService
 from app.rag.embeddings import get_embeddings_provider
@@ -14,7 +15,7 @@ router = APIRouter(tags=["rag"])
 def get_rag_service() -> RAGService:
     return RAGService(
         embeddings=get_embeddings_provider(),
-        retriever=Retriever(),
+        retriever=Retriever(max_age_days=settings.rag_max_age_days),
         generator=get_generator(),
     )
 

@@ -30,7 +30,6 @@ SOURCES: tuple[Source, ...] = (
     ),
     Source(name="Hugging Face Blog", url="https://huggingface.co/blog/feed.xml"),
     Source(name="Meta AI Blog", url="https://ai.meta.com/blog/rss/"),
-    Source(name="arXiv cs.AI", url="https://export.arxiv.org/rss/cs.AI"),
     Source(
         name="VentureBeat AI",
         url="https://venturebeat.com/category/ai/feed/",

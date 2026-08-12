@@ -48,9 +48,13 @@ class FakeSession:
         self.existing_urls = existing_urls
         self.added: list[News] = []
         self.committed = False
+        self.executed: list[object] = []
 
     async def scalars(self, stmt: object) -> list[str]:
         return list(self.existing_urls)
+
+    async def execute(self, stmt: object) -> None:
+        self.executed.append(stmt)
 
     def add(self, news: News) -> None:
         self.added.append(news)
@@ -64,6 +68,17 @@ def _patch_http(monkeypatch: pytest.MonkeyPatch, responses: dict[str, bytes]) ->
         "app.rss.sync.httpx.AsyncClient",
         lambda **kwargs: FakeClientContext(responses),
     )
+
+
+async def test_sync_news_purges_removed_sources(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_http(monkeypatch, {SOURCES[0].url: FEED})
+    session = FakeSession(existing_urls=set())
+
+    await sync_news(session=session)
+
+    assert any(str(stmt).startswith("DELETE") for stmt in session.executed)
 
 
 async def test_sync_news_creates_and_skips_duplicates(

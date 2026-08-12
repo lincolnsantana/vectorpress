@@ -10,6 +10,7 @@ from app.api.telegram import router as telegram_router
 from app.core.config import settings
 from app.database.connection import dispose_engine, engine
 from app.database.models import Base
+from app.rag.embeddings import get_embeddings_provider
 from app.telegram.bot import get_application, shutdown_application
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await get_application()
     except Exception:
         logger.warning("Bot Telegram indisponível: verifique TELEGRAM_TOKEN.", exc_info=True)
+    try:
+        await get_embeddings_provider().warmup()
+    except Exception:
+        logger.warning("Falha ao pré-carregar modelo de embeddings.", exc_info=True)
     yield
     await shutdown_application()
     await dispose_engine()

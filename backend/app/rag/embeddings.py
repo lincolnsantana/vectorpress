@@ -14,6 +14,9 @@ class EmbeddingsProvider(ABC):
     async def embed(self, texts: list[str]) -> list[list[float]]:
         raise NotImplementedError
 
+    async def warmup(self) -> None:
+        return None
+
 
 class LocalEmbeddingsProvider(EmbeddingsProvider):
     def __init__(self, model_name: str) -> None:
@@ -36,6 +39,10 @@ class LocalEmbeddingsProvider(EmbeddingsProvider):
         embeddings = await loop.run_in_executor(None, partial(model.encode, texts))
         return [vector.tolist() for vector in embeddings]
 
+    async def warmup(self) -> None:
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, self._load_model)
+
 
 class OpenAIEmbeddingsProvider(EmbeddingsProvider):
     def __init__(self, api_key: str, model: str) -> None:
@@ -57,10 +64,17 @@ class OpenAIEmbeddingsProvider(EmbeddingsProvider):
         return [item["embedding"] for item in data["data"]]
 
 
+_provider_cache: dict[tuple[str, str], EmbeddingsProvider] = {}
+
+
 def get_embeddings_provider() -> EmbeddingsProvider:
-    if settings.embedding_provider == "openai":
-        return OpenAIEmbeddingsProvider(
-            api_key=settings.openai_api_key,
-            model=settings.embedding_model,
-        )
-    return LocalEmbeddingsProvider(model_name=settings.embedding_model)
+    key = (settings.embedding_provider, settings.embedding_model)
+    if key not in _provider_cache:
+        if settings.embedding_provider == "openai":
+            _provider_cache[key] = OpenAIEmbeddingsProvider(
+                api_key=settings.openai_api_key,
+                model=settings.embedding_model,
+            )
+        else:
+            _provider_cache[key] = LocalEmbeddingsProvider(model_name=settings.embedding_model)
+    return _provider_cache[key]

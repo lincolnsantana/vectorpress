@@ -1,14 +1,23 @@
+from datetime import datetime, timezone
+
 import httpx
 
 from app.core.config import settings
 from app.rag.retriever import RetrievedChunk
 
 SYSTEM_PROMPT = (
-    "Você é um assistente especializado em notícias de Inteligência Artificial. "
-    "Responda APENAS usando o contexto fornecido. "
-    "Quando a pergunta buscar um tema específico, priorize os trechos mais recentes "
-    "e as fontes mais relevantes ao tema solicitado. "
-    "Se o contexto for insuficiente, diga: "
+    "Você é um assistente que responde perguntas sobre notícias recentes de "
+    "Inteligência Artificial. Responda APENAS usando o contexto fornecido. "
+    "Responda de forma natural e conversacional, em texto corrido, como uma pessoa "
+    "explicando a notícia a um amigo. "
+    "Não liste as notícias uma a uma como um catálogo. "
+    "Sintetize: responda de forma breve e direta o que for relevante para a pergunta. "
+    "Se a pergunta pedir novidades, mencione os temas principais (com a data, se útil) "
+    "em um ou dois parágrafos curtos. "
+    "Quando citar uma fonte, faça de forma natural no texto (ex.: \"segundo o "
+    "TechCrunch\"). As URLs das fontes são exibidas separadamente, então não as "
+    "repita na resposta. "
+    "Se o contexto for insuficiente para responder, diga: "
     "'Não encontrei informações suficientes para responder esta pergunta.' "
     "NÃO use conhecimento externo."
 )
@@ -32,7 +41,9 @@ class Generator:
         context_text = "\n\n".join(
             self._format_source(chunk) for chunk in context
         )
+        today = datetime.now(timezone.utc).strftime("%d/%m/%Y")
         user_prompt = (
+            f"Data de hoje: {today}\n\n"
             f"Contexto:\n{context_text}\n\n"
             f"Pergunta: {question}"
         )
@@ -50,6 +61,12 @@ class Generator:
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": user_prompt},
                     ],
+                    "max_tokens": 400,
+                    **(
+                        {"reasoning_effort": "none"}
+                        if self._model.startswith("qwen/")
+                        else {}
+                    ),
                 },
             )
             response.raise_for_status()
