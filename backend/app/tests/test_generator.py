@@ -72,6 +72,11 @@ async def test_generate_calls_llm_with_context(monkeypatch: pytest.MonkeyPatch) 
     assert "Cite as fontes utilizadas" not in user_content
 
 
+def test_system_prompt_encourages_natural_answer() -> None:
+    assert "natural e conversacional" in SYSTEM_PROMPT
+    assert "não as repita na resposta" in SYSTEM_PROMPT
+
+
 async def test_generate_disables_qwen_thinking(monkeypatch: pytest.MonkeyPatch) -> None:
     import app.rag.generator as generator_module
 
