@@ -57,11 +57,10 @@ def format_list(
 
 
 def format_ask(
-    question: str,
     answer: str,
     chunks: Sequence[RetrievedChunk],
 ) -> str:
-    parts = [f"Pergunta: {question}", "", answer]
+    parts = [answer]
     sources: list[str] = []
     seen_urls: set[str] = set()
     for chunk in chunks:
@@ -127,7 +126,7 @@ async def ask_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         service = get_rag_service()
         async with async_session() as session:
             answer, chunks = await service.ask(session, question)
-        text = format_ask(question, answer, chunks)
+        text = format_ask(answer, chunks)
     except Exception:
         text = "Desculpe, não consegui processar sua pergunta agora. Tente novamente mais tarde."
     await message.reply_text(text)

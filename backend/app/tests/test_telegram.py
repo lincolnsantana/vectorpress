@@ -107,10 +107,10 @@ def test_format_list_omits_footer_on_last_page() -> None:
 
 
 def test_format_ask_includes_answer_and_sources() -> None:
-    text = commands.format_ask("O que houve?", "Resposta.", [make_chunk()])
+    text = commands.format_ask("Resposta.", [make_chunk()])
 
-    assert text.startswith("Pergunta: O que houve?")
-    assert "Resposta." in text
+    assert text.startswith("Resposta.")
+    assert "Pergunta:" not in text
     assert "Fontes:" in text
     assert "https://example.com/artigo" in text
 
@@ -119,7 +119,7 @@ def test_format_ask_deduplicates_sources_by_url() -> None:
     same_url = "https://example.com/artigo"
     chunks = [make_chunk(), make_chunk(title="Outro título")]
 
-    text = commands.format_ask("O que houve?", "Resposta.", chunks)
+    text = commands.format_ask("Resposta.", chunks)
 
     assert text.count(same_url) == 1
     assert text.count("Notícia de teste") == 1
