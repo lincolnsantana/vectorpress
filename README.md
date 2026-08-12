@@ -17,7 +17,7 @@ Nesta etapa o projeto entrega:
 Nesta etapa o projeto entrega:
 
 - ingestão de notícias via RSS (feedparser + httpx);
-- fontes iniciais: OpenAI Blog, Anthropic Blog, TechCrunch AI, Google AI Blog, DeepMind Blog, Microsoft AI Blog, MIT Tech Review AI, The Verge AI, Hugging Face Blog, Meta AI Blog, arXiv cs.AI, VentureBeat AI, Wired AI e 404 Media AI;
+- fontes iniciais: OpenAI Blog, Anthropic Blog, TechCrunch AI, Google AI Blog, DeepMind Blog, Microsoft AI Blog, MIT Tech Review AI, The Verge AI, Hugging Face Blog, Meta AI Blog, VentureBeat AI, Wired AI e 404 Media AI;
 - prevenção de duplicatas por URL;
 - persistência das notícias no PostgreSQL;
 - endpoint `POST /news/sync`;
