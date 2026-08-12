@@ -44,6 +44,7 @@ def make_chunk(**overrides: object) -> RetrievedChunk:
 class FakeMessage:
     def __init__(self, text: str = "") -> None:
         self.text = text
+        self.chat_id = 12345
         self.sent: list[str] = []
 
     async def reply_text(self, text: str) -> None:
@@ -55,9 +56,18 @@ class FakeUpdate:
         self.message = message
 
 
+class FakeBot:
+    def __init__(self) -> None:
+        self.actions: list[tuple[int, str]] = []
+
+    async def send_chat_action(self, chat_id: int, action: str) -> None:
+        self.actions.append((chat_id, action))
+
+
 class FakeContext:
     def __init__(self, args: list[str] | None = None) -> None:
         self.args = args
+        self.bot = FakeBot()
 
 
 class FakeRAGService:
@@ -203,14 +213,16 @@ async def test_ask_handler_asks_with_question_and_sources(
     service = FakeRAGService(chunks=[make_chunk()])
     monkeypatch.setattr(commands, "get_rag_service", lambda: service)
     message = FakeMessage()
+    context = FakeContext(["Quais", "novidades", "de", "IA?"])
 
-    await commands.ask_handler(FakeUpdate(message), FakeContext(["Quais", "novidades", "de", "IA?"]))
+    await commands.ask_handler(FakeUpdate(message), context)
 
     assert service.called_question == "Quais novidades de IA?"
     text = message.sent[-1]
     assert "Resposta baseada nas notícias." in text
     assert "Fontes:" in text
     assert "https://example.com/artigo" in text
+    assert context.bot.actions == [(message.chat_id, "typing")]
 
 
 async def test_ask_handler_without_question_returns_usage(

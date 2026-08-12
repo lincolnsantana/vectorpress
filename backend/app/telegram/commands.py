@@ -123,6 +123,7 @@ async def ask_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         return
     question = " ".join(context.args)
     try:
+        await context.bot.send_chat_action(chat_id=message.chat_id, action="typing")
         service = get_rag_service()
         async with async_session() as session:
             answer, chunks = await service.ask(session, question)

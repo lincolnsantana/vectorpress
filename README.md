@@ -131,6 +131,8 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
 
 Se `TELEGRAM_TOKEN` não estiver definido, a API sobe normalmente e o webhook responde `503` até o bot ser configurado.
 
+Durante o `/ask`, o bot exibe o indicador de digitação ("Digitando...") enquanto a resposta é gerada.
+
 ### Comandos
 
 | Comando         | Descrição                                    |
