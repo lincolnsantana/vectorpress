@@ -1,9 +1,11 @@
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 
 import httpx
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.database.connection import async_session
 from app.database.models import News
 from app.rss.parser import parse_feed
@@ -27,6 +29,15 @@ async def sync_news(session: AsyncSession | None = None) -> SyncSummary:
         await session.execute(
             delete(News).where(News.source.not_in(active_sources))
         )
+        if settings.news_retention_days > 0:
+            cutoff_retention = datetime.now(timezone.utc) - timedelta(
+                days=settings.news_retention_days
+            )
+            await session.execute(
+                delete(News).where(
+                    func.coalesce(News.published_at, News.created_at) < cutoff_retention
+                )
+            )
         existing_urls = set(await session.scalars(select(News.url)))
         summary = SyncSummary(
             sources=len(SOURCES),

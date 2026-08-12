@@ -78,7 +78,8 @@ async def test_sync_news_purges_removed_sources(
 
     await sync_news(session=session)
 
-    assert any(str(stmt).startswith("DELETE") for stmt in session.executed)
+    delete_statements = [str(stmt) for stmt in session.executed if str(stmt).startswith("DELETE")]
+    assert len(delete_statements) >= 2
 
 
 async def test_sync_news_creates_and_skips_duplicates(
