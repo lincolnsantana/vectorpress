@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 import httpx
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.connection import async_session
@@ -23,6 +23,10 @@ async def sync_news(session: AsyncSession | None = None) -> SyncSummary:
     owns_session = session is None
     session = session or async_session()
     try:
+        active_sources = {source.name for source in SOURCES}
+        await session.execute(
+            delete(News).where(News.source.not_in(active_sources))
+        )
         existing_urls = set(await session.scalars(select(News.url)))
         summary = SyncSummary(
             sources=len(SOURCES),
