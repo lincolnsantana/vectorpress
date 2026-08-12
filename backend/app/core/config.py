@@ -22,6 +22,7 @@ class Settings:
     llm_model: str = getenv("LLM_MODEL", "openai/gpt-oss-20b")
     groq_api_key: str = getenv("GROQ_API_KEY", "")
     rag_max_age_days: int = int(getenv("RAG_MAX_AGE_DAYS", "3"))
+    news_retention_days: int = int(getenv("NEWS_RETENTION_DAYS", "7"))
     telegram_token: str = getenv("TELEGRAM_TOKEN", "")
     telegram_webhook_url: str = getenv("TELEGRAM_WEBHOOK_URL", "")
 
