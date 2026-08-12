@@ -1,14 +1,17 @@
+from datetime import datetime, timezone
+
 import httpx
 
 from app.core.config import settings
 from app.rag.retriever import RetrievedChunk
 
 SYSTEM_PROMPT = (
-    "Você é um assistente especializado em notícias de Inteligência Artificial. "
+    "Você é um assistente que responde perguntas sobre notícias de Inteligência Artificial. "
+    "As notícias fornecidas no contexto foram publicadas nos últimos dias. "
     "Responda APENAS usando o contexto fornecido. "
-    "Quando a pergunta buscar um tema específico, priorize os trechos mais recentes "
-    "e as fontes mais relevantes ao tema solicitado. "
-    "Se o contexto for insuficiente, diga: "
+    "Priorize as notícias mais recentes e mais relevantes ao tema perguntado, "
+    "citando o título e a fonte de cada uma. "
+    "Se o contexto for insuficiente para responder, diga: "
     "'Não encontrei informações suficientes para responder esta pergunta.' "
     "NÃO use conhecimento externo."
 )
@@ -32,7 +35,9 @@ class Generator:
         context_text = "\n\n".join(
             self._format_source(chunk) for chunk in context
         )
+        today = datetime.now(timezone.utc).strftime("%d/%m/%Y")
         user_prompt = (
+            f"Data de hoje: {today}\n\n"
             f"Contexto:\n{context_text}\n\n"
             f"Pergunta: {question}"
         )

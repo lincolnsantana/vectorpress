@@ -59,6 +59,7 @@ Nesta etapa o projeto entrega:
 - armazenamento vetorial no PostgreSQL (pgvector, tabela `embeddings`);
 - indexação incremental: notícias novas são fragmentadas e embedadas durante o `POST /news/sync`;
 - busca vetorial por similaridade cosseno (top 5 chunks);
+- filtro de recência: o `/ask` considera apenas notícias publicadas na janela configurável `RAG_MAX_AGE_DAYS` (padrão: 3 dias);
 - geração de respostas via LLM (Groq API) usando apenas o contexto recuperado;
 - endpoint `POST /ask`.
 
@@ -103,6 +104,7 @@ Quando não há contexto suficiente, a resposta é: *"Não encontrei informaçõ
 
 - `EMBEDDING_PROVIDER=local` usa sentence-transformers localmente (modelo `all-MiniLM-L6-v2`, 384 dimensões). `EMBEDDING_PROVIDER=openai` usa a API da OpenAI.
 - `LLM_PROVIDER=groq` usa a Groq API (requer `GROQ_API_KEY`).
+- `RAG_MAX_AGE_DAYS` define quantos dias de recência o `/ask` considera (padrão `3`). Notícias mais antigas que essa janela são ignoradas na busca vetorial.
 
 ## Sprint 04 - Bot Telegram
 
