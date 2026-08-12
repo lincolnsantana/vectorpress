@@ -62,6 +62,7 @@ async def test_generate_calls_llm_with_context(monkeypatch: pytest.MonkeyPatch) 
     body = captured["body"]
     assert isinstance(body, dict)
     assert body["model"] == "llama3-8b-8192"
+    assert "reasoning_effort" not in body
     assert body["messages"][0]["content"] == SYSTEM_PROMPT
     user_content = body["messages"][1]["content"]
     assert isinstance(user_content, str)
@@ -69,3 +70,23 @@ async def test_generate_calls_llm_with_context(monkeypatch: pytest.MonkeyPatch) 
     assert "Título: Anthropic lança modelo" in user_content
     assert "Anthropic Blog" in user_content
     assert "Cite as fontes utilizadas" not in user_content
+
+
+async def test_generate_disables_qwen_thinking(monkeypatch: pytest.MonkeyPatch) -> None:
+    import app.rag.generator as generator_module
+
+    captured: dict[str, object] = {}
+
+    async def fake_post(self: object, url: str, **kwargs: object) -> FakeResponse:
+        captured["body"] = kwargs.get("json")
+        return FakeResponse("Resposta baseada no contexto.")
+
+    monkeypatch.setattr(generator_module.httpx.AsyncClient, "post", fake_post)
+
+    generator = Generator(api_key="test-key", model="qwen/qwen3.6-27b")
+
+    await generator.generate("Qual modelo foi anunciado?", [make_chunk()])
+
+    body = captured["body"]
+    assert isinstance(body, dict)
+    assert body.get("reasoning_effort") == "none"

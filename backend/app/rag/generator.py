@@ -50,6 +50,11 @@ class Generator:
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": user_prompt},
                     ],
+                    **(
+                        {"reasoning_effort": "none"}
+                        if self._model.startswith("qwen/")
+                        else {}
+                    ),
                 },
             )
             response.raise_for_status()
