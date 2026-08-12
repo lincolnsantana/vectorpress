@@ -14,6 +14,9 @@ class EmbeddingsProvider(ABC):
     async def embed(self, texts: list[str]) -> list[list[float]]:
         raise NotImplementedError
 
+    async def warmup(self) -> None:
+        return None
+
 
 class LocalEmbeddingsProvider(EmbeddingsProvider):
     def __init__(self, model_name: str) -> None:
@@ -35,6 +38,10 @@ class LocalEmbeddingsProvider(EmbeddingsProvider):
         loop = asyncio.get_running_loop()
         embeddings = await loop.run_in_executor(None, partial(model.encode, texts))
         return [vector.tolist() for vector in embeddings]
+
+    async def warmup(self) -> None:
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, self._load_model)
 
 
 class OpenAIEmbeddingsProvider(EmbeddingsProvider):

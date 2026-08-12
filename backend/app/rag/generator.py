@@ -61,6 +61,7 @@ class Generator:
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": user_prompt},
                     ],
+                    "max_tokens": 400,
                     **(
                         {"reasoning_effort": "none"}
                         if self._model.startswith("qwen/")

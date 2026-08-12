@@ -59,6 +59,7 @@ Nesta etapa o projeto entrega:
 - armazenamento vetorial no PostgreSQL (pgvector, tabela `embeddings`);
 - indexação incremental: notícias novas são fragmentadas e embedadas durante o `POST /news/sync`;
 - purga automática: o sync remove notícias de fontes que saíram de `sources.py` (ex.: arXiv removido);
+- preload do modelo de embeddings na inicialização da API (reduz o tempo de resposta do `/ask`);
 - busca vetorial por similaridade cosseno (top 5 chunks);
 - filtro de recência: o `/ask` considera apenas notícias publicadas na janela configurável `RAG_MAX_AGE_DAYS` (padrão: 3 dias);
 - geração de respostas via LLM (Groq API) usando apenas o contexto recuperado;
