@@ -143,6 +143,50 @@ Durante o `/ask`, o bot exibe o indicador de digitação ("Digitando...") enquan
 | `/list [página]`| Lista paginada de notícias recentes (10 por página) |
 | `/ask <pergunta>` | Consulta RAG sobre as notícias armazenadas  |
 
+## Sprint 05 - Automação com n8n
+
+Nesta etapa o projeto entrega:
+
+- workflow n8n para sincronização automática das notícias (a cada 6 horas);
+- o workflow apenas dispara o endpoint `POST /news/sync` — a leitura dos feeds RSS, deduplicação e indexação vetorial continuam na API;
+- notificações no Telegram para o admin:
+  - início da sincronização;
+  - sucesso, com a quantidade de notícias novas, duplicadas, erros e fontes;
+  - falha, com o corpo da resposta para diagnóstico;
+- workflow exportado e versionado em `n8n/workflows/rss-sync.json`.
+
+### Estrutura do workflow
+
+```
+Schedule Trigger (a cada 6 horas)
+↓
+Telegram: "Atualizando notícias com o sync/news..."
+↓
+HTTP Request: POST /news/sync
+↓
+IF: resposta contém "created"?
+├── true  → Telegram: "Base de notícias atualizada" (com contagens)
+└── false → Telegram: "Falha ao atualizar as notícias" (com resposta)
+```
+
+### Como importar o workflow
+
+1. Suba o n8n:
+
+   ```bash
+   docker run -it --rm -p 5678:5678 -v n8n_data:/home/node/.n8n n8nio/n8n
+   ```
+
+2. Acesse `http://localhost:5678`.
+3. Clique em **Workflows** → **Import** e selecione `n8n/workflows/rss-sync.json`.
+4. Crie a credencial **Telegram** (token do bot) e associe-a aos nós do tipo Telegram.
+5. Substitua os valores placeholder antes de ativar:
+   - URL do nó **HTTP Request**: `https://SEU-SUB.ngrok-free.app/news/sync` → sua URL pública real;
+   - `chatId` dos nós Telegram → o chat ID do admin (obtido via `getUpdates`);
+6. Use **Test workflow** para validar e, em seguida, ative o workflow com o toggle **Active**.
+
+> Dica: se a URL pública for do ngrok e aparecer a página de aviso do navegador na resposta do nó HTTP Request, adicione o header `ngrok-skip-browser-warning: true`.
+
 ## Requisitos
 
 - Docker e Docker Compose;
@@ -314,9 +358,12 @@ Recebe as atualizações do bot Telegram e processa os comandos `/today`, `/list
 │   └── requirements-dev.txt
 ├── docker/
 ├── docker-compose.yml
+├── n8n/
+│   └── workflows/
+│       └── rss-sync.json
 └── README.md
 ```
 
 ## Próximos passos
 
-As próximas sprints vão adicionar automação com n8n, frontend e deploy.
+As próximas sprints vão adicionar o frontend e o deploy.
