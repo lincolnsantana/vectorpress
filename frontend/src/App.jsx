@@ -1,3 +1,4 @@
+import NewsList from "@/components/NewsList";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 function App() {
@@ -22,9 +23,7 @@ function App() {
               <CardDescription>Listagem das notícias mais recentes.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                As notícias serão exibidas aqui.
-              </p>
+              <NewsList />
             </CardContent>
           </Card>
         </section>
