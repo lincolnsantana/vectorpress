@@ -1,8 +1,14 @@
+import { Moon, Sun } from "lucide-react";
+
 import AskPanel from "@/components/AskPanel";
 import NewsList from "@/components/NewsList";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTheme } from "@/lib/useTheme";
 
 function App() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="flex min-h-screen flex-col bg-background lg:h-screen lg:overflow-hidden">
       <header className="border-b">
@@ -13,6 +19,15 @@ function App() {
               Notícias de IA com consultas baseadas em RAG
             </p>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+            title={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+          >
+            {theme === "dark" ? <Sun /> : <Moon />}
+          </Button>
         </div>
       </header>
 
