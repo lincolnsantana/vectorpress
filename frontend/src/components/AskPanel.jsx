@@ -54,6 +54,7 @@ function AskPanel() {
           <Button
             variant="ghost"
             size="icon"
+            className="size-8"
             onClick={() => setMessages([])}
             aria-label="Limpar conversa"
             title="Limpar conversa"
@@ -94,7 +95,7 @@ function AskPanel() {
             }}
             placeholder="Pergunte sobre as notícias..."
             rows={1}
-            className="max-h-32 flex-1"
+            className="max-h-32 min-h-9 flex-1"
           />
           <Button
             type="submit"
