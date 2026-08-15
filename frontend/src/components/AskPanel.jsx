@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader2, MessageCircleQuestion, Send } from "lucide-react";
+import { Loader2, MessageCircleQuestion, Send, Trash2 } from "lucide-react";
 
 import MessageBubble from "@/components/MessageBubble";
 import { Button } from "@/components/ui/button";
@@ -45,11 +45,22 @@ function AskPanel() {
 
   return (
     <Card className="flex h-full flex-col gap-0">
-      <CardHeader className="border-b px-4 py-3">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 border-b px-4 py-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <MessageCircleQuestion />
           Perguntar
         </CardTitle>
+        {messages.length > 0 && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMessages([])}
+            aria-label="Limpar conversa"
+            title="Limpar conversa"
+          >
+            <Trash2 />
+          </Button>
+        )}
       </CardHeader>
 
       <CardContent className="flex min-h-0 flex-1 flex-col gap-0 p-0">
