@@ -28,7 +28,7 @@ class FakeClient:
         self.responses = responses
         self.pages = pages or {}
 
-    async def get(self, url: str) -> FakeResponse:
+    async def get(self, url: str, timeout: httpx.Timeout | None = None) -> FakeResponse:
         if url in self.pages:
             return FakeResponse(b"", self.pages[url])
         if url not in self.responses:
