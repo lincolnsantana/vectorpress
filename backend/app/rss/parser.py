@@ -40,12 +40,11 @@ def _to_article(entry: feedparser.FeedParserDict, source: Source) -> RawArticle 
 
 
 def _extract_image(entry: feedparser.FeedParserDict) -> str | None:
-    media = entry.get("media_content") or entry.get("media_thumbnail")
-    if media:
-        for item in media:
-            url = item.get("url")
-            if url:
-                return url
+    media = [*entry.get("media_content", []), *entry.get("media_thumbnail", [])]
+    for item in media:
+        url = item.get("url")
+        if url:
+            return url
     for enclosure in entry.get("enclosures") or []:
         if enclosure.get("type", "").startswith("image"):
             url = enclosure.get("href") or enclosure.get("url")
