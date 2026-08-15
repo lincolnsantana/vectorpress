@@ -21,6 +21,7 @@ RSS_WITH_ITEMS = b"""<?xml version="1.0" encoding="UTF-8"?>
       <title>Segundo artigo</title>
       <link>https://example.com/two</link>
       <pubDate>Thu, 02 Jan 2025 11:30:00 GMT</pubDate>
+      <description><![CDATA[<p>Texto do artigo</p><img src="https://example.com/two/cover.png"/><p>Fim</p>]]></description>
     </item>
     <item>
       <link>https://example.com/sem-titulo</link>
@@ -54,8 +55,8 @@ def test_parse_feed_handles_missing_metadata() -> None:
 
     second = articles[1]
     assert second.author is None
-    assert second.content is None
-    assert second.image_url is None
+    assert second.content == "<p>Texto do artigo</p><img src=\"https://example.com/two/cover.png\"/><p>Fim</p>"
+    assert second.image_url == "https://example.com/two/cover.png"
     assert second.published_at == datetime(2025, 1, 2, 11, 30, tzinfo=timezone.utc)
 
 

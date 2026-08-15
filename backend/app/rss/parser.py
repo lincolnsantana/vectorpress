@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 
 import feedparser
 
@@ -50,7 +51,26 @@ def _extract_image(entry: feedparser.FeedParserDict) -> str | None:
             url = enclosure.get("href") or enclosure.get("url")
             if url:
                 return url
+    content = _extract_content(entry)
+    if content:
+        return _first_image_url(content)
     return None
+
+
+def _first_image_url(html: str) -> str | None:
+    class ImageFinder(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.src: str | None = None
+
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if self.src is not None or tag != "img":
+                return
+            self.src = dict(attrs).get("src")
+
+    finder = ImageFinder()
+    finder.feed(html)
+    return finder.src
 
 
 def _clean(value: object) -> str:
