@@ -85,29 +85,31 @@ function AskPanel() {
 
         <form
           onSubmit={handleSubmit}
-          className="mt-auto flex shrink-0 items-center gap-2 border-t p-3"
+          className="mt-auto flex shrink-0 justify-center border-t p-3"
         >
-          <Textarea
-            value={question}
-            onChange={(event) => setQuestion(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                handleSubmit(event);
-              }
-            }}
-            placeholder="Pergunte sobre as notícias..."
-            rows={1}
-            className="max-h-32 min-h-9 flex-1"
-          />
-          <Button
-            type="submit"
-            size="icon"
-            disabled={loading || !question.trim()}
-            aria-label="Enviar pergunta"
-          >
-            <Send />
-          </Button>
+          <div className="flex w-full max-w-sm items-center gap-2">
+            <Textarea
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  handleSubmit(event);
+                }
+              }}
+              placeholder="Pergunte sobre as notícias..."
+              rows={1}
+              className="max-h-32 min-h-9 flex-1"
+            />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={loading || !question.trim()}
+              aria-label="Enviar pergunta"
+            >
+              <Send />
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>
