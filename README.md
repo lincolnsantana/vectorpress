@@ -288,7 +288,11 @@ Exemplo de resposta:
 
 ### `POST /news/sync`
 
-Dispara a sincronização das notícias das fontes RSS. Idempotente: URLs já armazenadas são ignoradas.
+Dispara a sincronização das notícias das fontes RSS.
+
+- URLs já armazenadas não são duplicadas;
+- quando um artigo já existente ainda não tem `image_url`, o sync tenta preenchê-lo (backfill);
+- quando o feed não fornece imagem, a API busca a tag `og:image` da página do artigo.
 
 ### `GET /news`
 
@@ -322,7 +326,7 @@ Exemplo de resposta:
 }
 ```
 
-> `image_url` e `summary` podem ser nulos/vazios quando o feed não fornece imagem ou conteúdo.
+> `image_url` pode ser nulo quando nem o feed nem a página do artigo fornecem uma imagem (o frontend exibe um placeholder). `summary` pode ser vazio quando o feed não fornece conteúdo.
 
 ### `GET /news/{id}`
 
