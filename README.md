@@ -310,6 +310,8 @@ Exemplo de resposta:
       "url": "https://…",
       "source": "OpenAI Blog",
       "author": null,
+      "image_url": "https://…",
+      "summary": "…",
       "published_at": "2025-01-01T10:00:00Z",
       "created_at": "2025-01-01T10:00:00Z"
     }
@@ -319,6 +321,8 @@ Exemplo de resposta:
   "offset": 0
 }
 ```
+
+> `image_url` e `summary` podem ser nulos/vazios quando o feed não fornece imagem ou conteúdo.
 
 ### `GET /news/{id}`
 
