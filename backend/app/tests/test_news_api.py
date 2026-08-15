@@ -79,6 +79,8 @@ async def test_list_news(client: httpx.AsyncClient, news_items: list[News]) -> N
     assert len(data["items"]) == 2
     assert data["limit"] == 20
     assert data["offset"] == 0
+    assert data["items"][0]["image_url"] is None
+    assert data["items"][0]["summary"] == "Conteúdo completo do artigo."
 
 
 async def test_get_news_returns_detail(

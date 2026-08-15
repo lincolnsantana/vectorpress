@@ -6,7 +6,7 @@ from app.rss.sources import Source
 SOURCE = Source(name="Test Blog", url="https://example.com/rss")
 
 RSS_WITH_ITEMS = b"""<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
     <title>Test Blog</title>
     <item>
@@ -15,6 +15,7 @@ RSS_WITH_ITEMS = b"""<?xml version="1.0" encoding="UTF-8"?>
       <description>Resumo do primeiro artigo</description>
       <author>John Doe</author>
       <pubDate>Wed, 01 Jan 2025 10:00:00 GMT</pubDate>
+      <media:content url="https://example.com/one/image.jpg" medium="image"/>
     </item>
     <item>
       <title>Segundo artigo</title>
@@ -45,6 +46,7 @@ def test_parse_feed_extracts_articles() -> None:
     assert first.author == "John Doe"
     assert first.content == "Resumo do primeiro artigo"
     assert first.published_at == datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
+    assert first.image_url == "https://example.com/one/image.jpg"
 
 
 def test_parse_feed_handles_missing_metadata() -> None:
@@ -53,6 +55,7 @@ def test_parse_feed_handles_missing_metadata() -> None:
     second = articles[1]
     assert second.author is None
     assert second.content is None
+    assert second.image_url is None
     assert second.published_at == datetime(2025, 1, 2, 11, 30, tzinfo=timezone.utc)
 
 
