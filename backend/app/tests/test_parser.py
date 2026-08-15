@@ -71,6 +71,27 @@ def test_parse_feed_empty_feed_returns_no_articles() -> None:
     assert parse_feed(EMPTY_FEED, SOURCE) == []
 
 
+RSS_WITH_EMPTY_MEDIA_CONTENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <item>
+      <title>Artigo com media content vazio</title>
+      <link>https://example.com/empty-media</link>
+      <media:content medium="image"/>
+      <media:thumbnail url="https://example.com/thumb.jpg" width="1200" height="630"/>
+    </item>
+  </channel>
+</rss>
+"""
+
+
+def test_parse_feed_skips_empty_media_content_and_uses_thumbnail() -> None:
+    articles = parse_feed(RSS_WITH_EMPTY_MEDIA_CONTENT, SOURCE)
+
+    assert len(articles) == 1
+    assert articles[0].image_url == "https://example.com/thumb.jpg"
+
+
 def test_extract_og_image_finds_meta_tag() -> None:
     html = (
         '<html><head><meta property="og:title" content="Titulo"/>'
