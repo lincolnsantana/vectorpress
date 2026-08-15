@@ -83,7 +83,10 @@ function AskPanel() {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex items-end gap-2 border-t p-3">
+        <form
+          onSubmit={handleSubmit}
+          className="mt-auto flex shrink-0 items-center gap-2 border-t p-3"
+        >
           <Textarea
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
