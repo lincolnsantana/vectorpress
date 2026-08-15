@@ -1,93 +1,99 @@
-import { useState } from "react";
-import { ExternalLink, Loader2, MessageCircleQuestion } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, MessageCircleQuestion, Send } from "lucide-react";
 
+import MessageBubble from "@/components/MessageBubble";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { askQuestion } from "@/lib/api";
 
 function AskPanel() {
+  const [messages, setMessages] = useState([]);
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   async function handleSubmit(event) {
     event.preventDefault();
     const questionValue = question.trim();
     if (!questionValue || loading) return;
+    setQuestion("");
+    setMessages((prev) => [...prev, { role: "user", content: questionValue }]);
     setLoading(true);
-    setError("");
-    setAnswer("");
-    setSources([]);
     try {
       const result = await askQuestion(questionValue);
-      setAnswer(result.answer);
-      setSources(result.sources || []);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: result.answer, sources: result.sources || [] },
+      ]);
     } catch {
-      setError("Não foi possível processar a pergunta. Tente novamente.");
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Não foi possível processar a pergunta. Tente novamente.",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <Card className="flex h-full flex-col gap-0">
+      <CardHeader className="border-b px-4 py-3">
+        <CardTitle className="flex items-center gap-2 text-base">
           <MessageCircleQuestion />
           Perguntar
         </CardTitle>
-        <CardDescription>Faça uma pergunta sobre as notícias recentes.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-0 p-0">
+        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-4">
+          {messages.length === 0 && (
+            <p className="mt-auto text-sm text-muted-foreground">
+              Pergunte sobre as notícias recentes de IA.
+            </p>
+          )}
+          {messages.map((message, index) => (
+            <MessageBubble key={index} message={message} />
+          ))}
+          {loading && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="animate-spin" />
+              Buscando resposta...
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex items-end gap-2 border-t p-3">
           <Textarea
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
-            placeholder="Ex.: O que a OpenAI anunciou recentemente?"
-            rows={4}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                handleSubmit(event);
+              }
+            }}
+            placeholder="Pergunte sobre as notícias..."
+            rows={1}
+            className="max-h-32 flex-1"
           />
-          <Button type="submit" disabled={loading || !question.trim()}>
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin" />
-                Perguntando...
-              </>
-            ) : (
-              "Perguntar"
-            )}
+          <Button
+            type="submit"
+            size="icon"
+            disabled={loading || !question.trim()}
+            aria-label="Enviar pergunta"
+          >
+            <Send />
           </Button>
         </form>
-
-        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-
-        {answer && (
-          <div className="mt-4 flex flex-col gap-2">
-            <p className="text-sm leading-relaxed text-foreground">{answer}</p>
-            {sources.length > 0 && (
-              <div className="mt-2 flex flex-col gap-2">
-                <p className="text-xs font-medium text-muted-foreground">Fontes:</p>
-                <ul className="flex flex-col gap-1">
-                  {sources.map((source) => (
-                    <li key={source.url}>
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                      >
-                        {source.title}
-                        <ExternalLink className="size-3" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
