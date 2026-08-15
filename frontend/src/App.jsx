@@ -1,22 +1,41 @@
+import { Laptop, Moon, Sun } from "lucide-react";
+
+import AskPanel from "@/components/AskPanel";
 import NewsList from "@/components/NewsList";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTheme } from "@/lib/useTheme";
 
 function App() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background lg:h-screen lg:overflow-hidden">
       <header className="border-b">
         <div className="flex w-full items-center justify-between px-6 py-4">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">AI Pulse</h1>
+            <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground">
+              <Laptop />
+              AI Pulse
+            </h1>
             <p className="text-sm text-muted-foreground">
               Notícias de IA com consultas baseadas em RAG
             </p>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+            title={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+          >
+            {theme === "dark" ? <Sun /> : <Moon />}
+          </Button>
         </div>
       </header>
 
-      <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 lg:flex-row">
-        <section className="w-full lg:w-[70%]">
+      <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 lg:flex-row lg:overflow-hidden">
+        <section className="w-full lg:w-[70%] lg:overflow-y-auto">
           <Card>
             <CardHeader>
               <CardTitle>Últimas notícias</CardTitle>
@@ -28,20 +47,8 @@ function App() {
           </Card>
         </section>
 
-        <aside className="w-full lg:w-[30%] lg:sticky lg:top-6 lg:self-start">
-          <Card>
-            <CardHeader>
-              <CardTitle>Perguntar</CardTitle>
-              <CardDescription>
-                Faça uma pergunta sobre as notícias recentes.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                A caixa de perguntas será exibida aqui.
-              </p>
-            </CardContent>
-          </Card>
+        <aside className="w-full lg:w-[30%] lg:overflow-hidden">
+          <AskPanel />
         </aside>
       </main>
     </div>

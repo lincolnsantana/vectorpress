@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from app.rss.parser import parse_feed
+from app.rss.parser import extract_og_image, parse_feed
 from app.rss.sources import Source
 
 SOURCE = Source(name="Test Blog", url="https://example.com/rss")
@@ -21,6 +21,7 @@ RSS_WITH_ITEMS = b"""<?xml version="1.0" encoding="UTF-8"?>
       <title>Segundo artigo</title>
       <link>https://example.com/two</link>
       <pubDate>Thu, 02 Jan 2025 11:30:00 GMT</pubDate>
+      <description><![CDATA[<p>Texto do artigo</p><img src="https://example.com/two/cover.png"/><p>Fim</p>]]></description>
     </item>
     <item>
       <link>https://example.com/sem-titulo</link>
@@ -54,8 +55,8 @@ def test_parse_feed_handles_missing_metadata() -> None:
 
     second = articles[1]
     assert second.author is None
-    assert second.content is None
-    assert second.image_url is None
+    assert second.content == "<p>Texto do artigo</p><img src=\"https://example.com/two/cover.png\"/><p>Fim</p>"
+    assert second.image_url == "https://example.com/two/cover.png"
     assert second.published_at == datetime(2025, 1, 2, 11, 30, tzinfo=timezone.utc)
 
 
@@ -68,3 +69,46 @@ def test_parse_feed_skips_entries_without_title() -> None:
 
 def test_parse_feed_empty_feed_returns_no_articles() -> None:
     assert parse_feed(EMPTY_FEED, SOURCE) == []
+
+
+RSS_WITH_EMPTY_MEDIA_CONTENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <item>
+      <title>Artigo com media content vazio</title>
+      <link>https://example.com/empty-media</link>
+      <media:content medium="image"/>
+      <media:thumbnail url="https://example.com/thumb.jpg" width="1200" height="630"/>
+    </item>
+  </channel>
+</rss>
+"""
+
+
+def test_parse_feed_skips_empty_media_content_and_uses_thumbnail() -> None:
+    articles = parse_feed(RSS_WITH_EMPTY_MEDIA_CONTENT, SOURCE)
+
+    assert len(articles) == 1
+    assert articles[0].image_url == "https://example.com/thumb.jpg"
+
+
+def test_extract_og_image_finds_meta_tag() -> None:
+    html = (
+        '<html><head><meta property="og:title" content="Titulo"/>'
+        '<meta property="og:image" content="https://example.com/cover.jpg"/>'
+        "</head></html>"
+    )
+
+    assert extract_og_image(html) == "https://example.com/cover.jpg"
+
+
+def test_extract_og_image_finds_url_variant() -> None:
+    html = '<meta property="og:image:url" content="https://example.com/alt.jpg"/>'
+
+    assert extract_og_image(html) == "https://example.com/alt.jpg"
+
+
+def test_extract_og_image_returns_none_when_missing() -> None:
+    html = "<html><head><title>Sem imagem</title></head></html>"
+
+    assert extract_og_image(html) is None

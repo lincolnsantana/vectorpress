@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 
 import feedparser
 
@@ -39,18 +40,55 @@ def _to_article(entry: feedparser.FeedParserDict, source: Source) -> RawArticle 
 
 
 def _extract_image(entry: feedparser.FeedParserDict) -> str | None:
-    media = entry.get("media_content") or entry.get("media_thumbnail")
-    if media:
-        for item in media:
-            url = item.get("url")
-            if url:
-                return url
+    media = [*entry.get("media_content", []), *entry.get("media_thumbnail", [])]
+    for item in media:
+        url = item.get("url")
+        if url:
+            return url
     for enclosure in entry.get("enclosures") or []:
         if enclosure.get("type", "").startswith("image"):
             url = enclosure.get("href") or enclosure.get("url")
             if url:
                 return url
+    content = _extract_content(entry)
+    if content:
+        return _first_image_url(content)
     return None
+
+
+def extract_og_image(html: str) -> str | None:
+    class OgImageFinder(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.src: str | None = None
+
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if self.src is not None or tag != "meta":
+                return
+            attributes = dict(attrs)
+            prop = (attributes.get("property") or "").lower()
+            if prop in {"og:image", "og:image:url"} and attributes.get("content"):
+                self.src = attributes["content"]
+
+    finder = OgImageFinder()
+    finder.feed(html)
+    return finder.src
+
+
+def _first_image_url(html: str) -> str | None:
+    class ImageFinder(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.src: str | None = None
+
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if self.src is not None or tag != "img":
+                return
+            self.src = dict(attrs).get("src")
+
+    finder = ImageFinder()
+    finder.feed(html)
+    return finder.src
 
 
 def _clean(value: object) -> str:
