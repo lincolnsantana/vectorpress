@@ -1,3 +1,4 @@
+import AskPanel from "@/components/AskPanel";
 import NewsList from "@/components/NewsList";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -29,19 +30,7 @@ function App() {
         </section>
 
         <aside className="w-full lg:w-[30%] lg:sticky lg:top-6 lg:self-start">
-          <Card>
-            <CardHeader>
-              <CardTitle>Perguntar</CardTitle>
-              <CardDescription>
-                Faça uma pergunta sobre as notícias recentes.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                A caixa de perguntas será exibida aqui.
-              </p>
-            </CardContent>
-          </Card>
+          <AskPanel />
         </aside>
       </main>
     </div>
