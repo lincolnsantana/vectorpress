@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from app.rss.parser import parse_feed
+from app.rss.parser import extract_og_image, parse_feed
 from app.rss.sources import Source
 
 SOURCE = Source(name="Test Blog", url="https://example.com/rss")
@@ -69,3 +69,25 @@ def test_parse_feed_skips_entries_without_title() -> None:
 
 def test_parse_feed_empty_feed_returns_no_articles() -> None:
     assert parse_feed(EMPTY_FEED, SOURCE) == []
+
+
+def test_extract_og_image_finds_meta_tag() -> None:
+    html = (
+        '<html><head><meta property="og:title" content="Titulo"/>'
+        '<meta property="og:image" content="https://example.com/cover.jpg"/>'
+        "</head></html>"
+    )
+
+    assert extract_og_image(html) == "https://example.com/cover.jpg"
+
+
+def test_extract_og_image_finds_url_variant() -> None:
+    html = '<meta property="og:image:url" content="https://example.com/alt.jpg"/>'
+
+    assert extract_og_image(html) == "https://example.com/alt.jpg"
+
+
+def test_extract_og_image_returns_none_when_missing() -> None:
+    html = "<html><head><title>Sem imagem</title></head></html>"
+
+    assert extract_og_image(html) is None
