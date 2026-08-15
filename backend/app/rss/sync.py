@@ -65,6 +65,7 @@ async def sync_news(session: AsyncSession | None = None) -> SyncSummary:
                                 source=article.source,
                                 author=article.author,
                                 content=article.content or "",
+                                image_url=article.image_url,
                                 published_at=article.published_at,
                             )
                         )

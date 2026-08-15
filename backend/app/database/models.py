@@ -24,6 +24,7 @@ class News(Base):
     source: Mapped[str] = mapped_column(String(255), nullable=False)
     author: Mapped[str | None] = mapped_column(Text, nullable=True)
     content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    image_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

@@ -9,6 +9,7 @@ from app.database.models import News
 from app.rag.indexer import index_news
 from app.rss.sync import sync_news
 from app.schemas.news import NewsDetailOut, NewsListItem, NewsListOut, SyncResponse
+from app.utils.helpers import make_summary
 
 router = APIRouter(prefix="/news", tags=["news"])
 
@@ -42,7 +43,20 @@ async def list_news(
     )
     items = result.all()
     return NewsListOut(
-        items=[NewsListItem.model_validate(item) for item in items],
+        items=[
+            NewsListItem(
+                id=item.id,
+                title=item.title,
+                url=item.url,
+                source=item.source,
+                author=item.author,
+                image_url=item.image_url,
+                summary=make_summary(item.content),
+                published_at=item.published_at,
+                created_at=item.created_at,
+            )
+            for item in items
+        ],
         total=total or 0,
         limit=limit,
         offset=offset,

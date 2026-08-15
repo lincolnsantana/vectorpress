@@ -13,6 +13,7 @@ class RawArticle:
     source: str
     author: str | None
     content: str | None
+    image_url: str | None
     published_at: datetime | None
 
 
@@ -32,8 +33,24 @@ def _to_article(entry: feedparser.FeedParserDict, source: Source) -> RawArticle 
         source=source.name,
         author=_extract_author(entry),
         content=_extract_content(entry),
+        image_url=_extract_image(entry),
         published_at=_extract_published_at(entry),
     )
+
+
+def _extract_image(entry: feedparser.FeedParserDict) -> str | None:
+    media = entry.get("media_content") or entry.get("media_thumbnail")
+    if media:
+        for item in media:
+            url = item.get("url")
+            if url:
+                return url
+    for enclosure in entry.get("enclosures") or []:
+        if enclosure.get("type", "").startswith("image"):
+            url = enclosure.get("href") or enclosure.get("url")
+            if url:
+                return url
+    return None
 
 
 def _clean(value: object) -> str:

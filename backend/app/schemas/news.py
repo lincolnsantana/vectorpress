@@ -12,6 +12,8 @@ class NewsListItem(BaseModel):
     url: str
     source: str
     author: str | None
+    image_url: str | None = None
+    summary: str = ""
     published_at: datetime | None
     created_at: datetime
 
