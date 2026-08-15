@@ -217,6 +217,7 @@ Variáveis disponíveis:
 - `NEWS_RETENTION_DAYS`
 - `TELEGRAM_TOKEN`
 - `TELEGRAM_WEBHOOK_URL`
+- `VITE_API_PROXY_TARGET`
 
 ## Como executar com Docker
 
@@ -227,7 +228,10 @@ docker compose up --build
 Serviços expostos:
 
 - API: `http://localhost:8000`
+- Frontend: `http://localhost:5173`
 - PostgreSQL: `localhost:5432`
+
+O frontend (Vite dev server) roda em `http://localhost:5173` e faz proxy das chamadas de API (`/news`, `/ask`, `/health`) para o backend via `VITE_API_PROXY_TARGET` (padrão `http://backend:8000`).
 
 ## Como executar localmente
 
@@ -235,6 +239,7 @@ Serviços expostos:
 2. Instale as dependências do backend (use `requirements-dev.txt` para incluir as dependências de teste).
 3. Exporte as variáveis de ambiente.
 4. Inicie a API com Uvicorn.
+5. (Opcional) Inicie o frontend separadamente com Vite.
 
 Exemplo:
 
@@ -244,6 +249,15 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Frontend (em outro terminal):
+
+```bash
+cd frontend
+npm install
+npm run dev
+# acesse http://localhost:5173
 ```
 
 ## Testes
@@ -366,6 +380,17 @@ Recebe as atualizações do bot Telegram e processa os comandos `/today`, `/list
 │   └── requirements-dev.txt
 ├── docker/
 ├── docker-compose.yml
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── ui/
+│   │   ├── lib/
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── Dockerfile
+│   ├── package.json
+│   └── vite.config.js
 ├── n8n/
 │   └── workflows/
 │       └── rss-sync.json
@@ -374,4 +399,4 @@ Recebe as atualizações do bot Telegram e processa os comandos `/today`, `/list
 
 ## Próximos passos
 
-As próximas sprints vão adicionar o frontend e o deploy.
+As próximas sprints vão adicionar o deploy da aplicação.
