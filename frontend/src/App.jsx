@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
+        <div className="flex w-full items-center justify-between px-6 py-4">
           <div>
             <h1 className="text-xl font-semibold text-foreground">AI Pulse</h1>
             <p className="text-sm text-muted-foreground">
@@ -15,7 +15,7 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-8 lg:flex-row">
+      <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 lg:flex-row">
         <section className="w-full lg:w-[70%]">
           <Card>
             <CardHeader>
