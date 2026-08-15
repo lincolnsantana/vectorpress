@@ -1,4 +1,4 @@
-import { Moon, Sun } from "lucide-react";
+import { Laptop, Moon, Sun } from "lucide-react";
 
 import AskPanel from "@/components/AskPanel";
 import NewsList from "@/components/NewsList";
@@ -14,7 +14,10 @@ function App() {
       <header className="border-b">
         <div className="flex w-full items-center justify-between px-6 py-4">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">AI Pulse</h1>
+            <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground">
+              <Laptop />
+              AI Pulse
+            </h1>
             <p className="text-sm text-muted-foreground">
               Notícias de IA com consultas baseadas em RAG
             </p>
