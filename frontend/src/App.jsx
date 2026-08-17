@@ -15,7 +15,7 @@ function App() {
         <div className="flex w-full items-center justify-between px-6 py-4">
           <div>
             <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground">
-              <Laptop />
+              📰
               AI Pulse
             </h1>
             <p className="text-sm text-muted-foreground">
