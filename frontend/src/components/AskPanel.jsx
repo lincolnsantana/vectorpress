@@ -45,7 +45,7 @@ function AskPanel() {
 
   return (
     <Card className="flex h-full flex-col gap-0 py-0">
-      <CardHeader className="flex flex-row items-center justify-between gap-2 border-b px-4 py-3">
+      <CardHeader className="flex flex-row items-center justify-between gap-2 border-b p-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <MessageCircleQuestion />
           Perguntar
