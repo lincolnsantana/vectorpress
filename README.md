@@ -207,6 +207,7 @@ Variáveis disponíveis:
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
 - `POSTGRES_PORT`
+- `BACKEND_PORT`
 - `EMBEDDING_PROVIDER`
 - `EMBEDDING_MODEL`
 - `OPENAI_API_KEY`
@@ -218,6 +219,13 @@ Variáveis disponíveis:
 - `TELEGRAM_TOKEN`
 - `TELEGRAM_WEBHOOK_URL`
 - `VITE_API_PROXY_TARGET`
+- `VITE_API_URL`
+- `FRONTEND_PORT`
+- `N8N_HOST`
+- `N8N_PORT`
+- `N8N_PROTOCOL`
+- `N8N_WEBHOOK_URL`
+- `GENERIC_TIMEZONE`
 
 ## Como executar com Docker
 
@@ -232,6 +240,28 @@ Serviços expostos:
 - PostgreSQL: `localhost:5432`
 
 O frontend (Vite dev server) roda em `http://localhost:5173` e faz proxy das chamadas de API (`/news`, `/ask`, `/health`) para o backend via `VITE_API_PROXY_TARGET` (padrão `http://backend:8000`).
+
+## Docker Compose de produção
+
+A Sprint 07 adiciona um compose separado para produção, mantendo o `docker-compose.yml` como ambiente local de desenvolvimento.
+
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+Serviços expostos:
+
+- API: `http://localhost:${BACKEND_PORT:-8000}`
+- Frontend estático: `http://localhost:${FRONTEND_PORT:-8080}`
+- n8n: `http://localhost:${N8N_PORT:-5678}`
+
+O PostgreSQL fica disponível apenas na rede interna do Compose. Para produção, configure `VITE_API_URL` com a URL pública HTTPS do backend antes de construir o frontend, por exemplo:
+
+```bash
+VITE_API_URL=https://api.seudominio.com docker compose -f docker-compose.prod.yml up --build -d
+```
+
+O serviço `n8n` persiste os dados no volume `n8n_data` e deve chamar o backend pela rede interna usando `http://backend:8000`.
 
 ## Como executar localmente
 
@@ -379,6 +409,7 @@ Recebe as atualizações do bot Telegram e processa os comandos `/today`, `/list
 │   ├── requirements.txt
 │   └── requirements-dev.txt
 ├── docker/
+├── docker-compose.prod.yml
 ├── docker-compose.yml
 ├── frontend/
 │   ├── src/
