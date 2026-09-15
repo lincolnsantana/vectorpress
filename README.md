@@ -2,6 +2,21 @@
 
 AI Pulse é uma API para monitorar notícias sobre Inteligência Artificial e responder perguntas sobre elas usando Retrieval-Augmented Generation (RAG) com base vetorial no PostgreSQL (pgvector).
 
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-vector%20search-5B5BD6)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?logo=sqlalchemy&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-RAG-1C3C3C)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=111111)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![n8n](https://img.shields.io/badge/n8n-automation-EA4B71?logo=n8n&logoColor=white)
+![Telegram](https://img.shields.io/badge/Telegram-Bot-26A5E4?logo=telegram&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-LLM-F55036)
+![pytest](https://img.shields.io/badge/pytest-tests-0A9EDC?logo=pytest&logoColor=white)
+
 ## Sprint 01 - Fundação
 
 Nesta etapa o projeto entrega:
