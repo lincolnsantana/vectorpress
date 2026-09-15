@@ -269,6 +269,57 @@ VITE_API_URL=https://api.seudominio.com docker compose -f docker-compose.prod.ym
 
 O serviço `n8n` persiste os dados no volume `n8n_data` e deve chamar o backend pela rede interna usando `http://backend:8000`.
 
+## Exposição do backend com Cloudflare Tunnel
+
+A Sprint 07 usa Cloudflare Tunnel para publicar o backend do homelab com HTTPS, sem abrir portas no roteador. O túnel deve apontar a URL pública para o serviço local do backend em `http://localhost:8000`.
+
+Pré-requisitos:
+
+- domínio gerenciado pela Cloudflare;
+- `cloudflared` instalado na máquina que roda o Docker Compose de produção;
+- backend rodando com `docker compose -f docker-compose.prod.yml up --build -d`.
+
+Passo a passo:
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel create ai-pulse-api
+cloudflared tunnel route dns ai-pulse-api api.seudominio.com
+```
+
+Crie o arquivo `~/.cloudflared/config.yml` na máquina de produção:
+
+```yaml
+tunnel: ai-pulse-api
+credentials-file: /home/seu-usuario/.cloudflared/<tunnel-id>.json
+
+ingress:
+  - hostname: api.seudominio.com
+    service: http://localhost:8000
+  - service: http_status:404
+```
+
+Inicie o túnel:
+
+```bash
+cloudflared tunnel run ai-pulse-api
+```
+
+Depois que a URL pública estiver respondendo, atualize o `.env` de produção:
+
+```bash
+VITE_API_URL=https://api.seudominio.com
+TELEGRAM_WEBHOOK_URL=https://api.seudominio.com/telegram/webhook
+```
+
+Valide a exposição pública:
+
+```bash
+curl https://api.seudominio.com/health
+```
+
+Para manter o túnel ativo em produção, instale o serviço do `cloudflared` conforme o sistema operacional do homelab e execute o tunnel como serviço de sistema.
+
 ## Como executar localmente
 
 1. Crie e ative um ambiente virtual.
