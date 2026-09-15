@@ -403,6 +403,39 @@ Se o endpoint `/telegram/webhook` responder `503`, confira se `TELEGRAM_TOKEN` e
 docker compose -f docker-compose.prod.yml up -d --build backend
 ```
 
+## Workflow n8n em produção
+
+O workflow versionado em `n8n/workflows/rss-sync.json` deve ser importado no n8n de produção e ajustado manualmente antes de ser ativado. O arquivo mantém placeholders para evitar commitar URLs e IDs reais.
+
+Se o n8n estiver rodando no `docker-compose.prod.yml`, configure o nó **HTTP Request** para chamar o backend pela rede interna do Compose:
+
+```text
+http://backend:8000/news/sync
+```
+
+Se o n8n estiver fora do Compose, por exemplo no n8n Cloud, configure o nó **HTTP Request** com a URL pública do Cloudflare Tunnel:
+
+```text
+https://api.seudominio.com/news/sync
+```
+
+Checklist de configuração no editor do n8n:
+
+1. Importe `n8n/workflows/rss-sync.json`.
+2. Abra o nó **HTTP Request** e substitua `https://SEU-SUB.ngrok-free.app/news/sync`.
+3. Crie ou selecione a credencial **Telegram** nos nós de notificação.
+4. Substitua `seu_chat_id_adm` pelo chat ID do administrador.
+5. Execute **Test workflow** e confirme que o retorno contém `created`, `skipped`, `errors` e `sources`.
+6. Ative o workflow somente depois do teste manual passar.
+
+Para validar pelo container do n8n no Compose de produção, execute uma chamada manual a partir da mesma rede:
+
+```bash
+docker compose -f docker-compose.prod.yml exec n8n wget -qO- http://backend:8000/health
+```
+
+Depois da primeira execução agendada, confira no banco se novas notícias foram persistidas e verifique se a mensagem de sucesso chegou no Telegram do admin.
+
 ## Como executar localmente
 
 1. Crie e ative um ambiente virtual.
