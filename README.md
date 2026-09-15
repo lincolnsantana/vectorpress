@@ -322,6 +322,51 @@ curl https://api.seudominio.com/health
 
 Para manter o túnel ativo em produção, instale o serviço do `cloudflared` conforme o sistema operacional do homelab e execute o tunnel como serviço de sistema.
 
+## Deploy do frontend na Vercel
+
+O frontend é um build estático React/Vite. Na Vercel, ele deve ser publicado a partir da pasta `frontend` e precisa receber a URL pública HTTPS do backend na variável `VITE_API_URL`.
+
+Antes de publicar, confirme que o backend já está acessível pelo Cloudflare Tunnel:
+
+```bash
+curl https://api.seudominio.com/health
+```
+
+Configuração do projeto na Vercel:
+
+| Campo | Valor |
+|-------|-------|
+| Framework Preset | `Vite` |
+| Root Directory | `frontend` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Install Command | `npm ci` |
+
+Variável de ambiente na Vercel:
+
+| Nome | Valor |
+|------|-------|
+| `VITE_API_URL` | `https://api.seudominio.com` |
+
+Depois do primeiro deploy, copie o domínio gerado pela Vercel e libere essa origem no backend:
+
+```bash
+CORS_ALLOWED_ORIGINS=https://ai-pulse.vercel.app
+```
+
+Se usar mais de um domínio, separe as origens por vírgula:
+
+```bash
+CORS_ALLOWED_ORIGINS=https://ai-pulse.vercel.app,https://www.seudominio.com
+```
+
+Validação após o deploy:
+
+1. Acesse a URL pública do frontend na Vercel.
+2. Abra a aba "Notícias" e confirme que os cards carregam a partir do endpoint `/news`.
+3. Abra a aba "Perguntar" e envie uma pergunta para validar o endpoint `/ask`.
+4. Se o navegador bloquear a requisição por CORS, confira se `CORS_ALLOWED_ORIGINS` no backend contém exatamente a origem exibida na barra de endereço do frontend, incluindo `https://`.
+
 ## Como executar localmente
 
 1. Crie e ative um ambiente virtual.
