@@ -212,6 +212,7 @@ cp .env.example .env
 | `POSTGRES_PASSWORD` | Sim | Senha do PostgreSQL; altere em produção. |
 | `POSTGRES_PORT` | Não | Porta exposta pelo PostgreSQL no compose local. |
 | `BACKEND_PORT` | Não | Porta pública do backend no compose de produção. |
+| `CORS_ALLOWED_ORIGINS` | Sim em produção | Origens permitidas pelo CORS, separadas por vírgula. |
 | `EMBEDDING_PROVIDER` | Não | Provedor de embeddings: `local` ou `openai`. |
 | `EMBEDDING_MODEL` | Não | Modelo de embeddings; padrão local `all-MiniLM-L6-v2`. |
 | `OPENAI_API_KEY` | Condicional | Necessária para embeddings ou LLM via OpenAI. |
@@ -231,7 +232,7 @@ cp .env.example .env
 | `N8N_WEBHOOK_URL` | Condicional | URL pública base dos webhooks do n8n. |
 | `GENERIC_TIMEZONE` | Não | Fuso horário usado pelo n8n. |
 
-Em produção, configure pelo menos `POSTGRES_PASSWORD`, `GROQ_API_KEY`, `VITE_API_URL`, `TELEGRAM_TOKEN`, `TELEGRAM_WEBHOOK_URL`, `N8N_HOST`, `N8N_PROTOCOL` e `N8N_WEBHOOK_URL` com valores reais.
+Em produção, configure pelo menos `POSTGRES_PASSWORD`, `GROQ_API_KEY`, `VITE_API_URL`, `CORS_ALLOWED_ORIGINS`, `TELEGRAM_TOKEN`, `TELEGRAM_WEBHOOK_URL`, `N8N_HOST`, `N8N_PROTOCOL` e `N8N_WEBHOOK_URL` com valores reais.
 
 ## Como executar com Docker
 
@@ -310,6 +311,7 @@ Depois que a URL pública estiver respondendo, atualize o `.env` de produção:
 ```bash
 VITE_API_URL=https://api.seudominio.com
 TELEGRAM_WEBHOOK_URL=https://api.seudominio.com/telegram/webhook
+CORS_ALLOWED_ORIGINS=https://ai-pulse.vercel.app
 ```
 
 Valide a exposição pública:

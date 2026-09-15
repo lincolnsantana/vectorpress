@@ -1,5 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from os import getenv
+
+
+def parse_csv_env(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,6 +29,9 @@ class Settings:
     news_retention_days: int = int(getenv("NEWS_RETENTION_DAYS", "7"))
     telegram_token: str = getenv("TELEGRAM_TOKEN", "")
     telegram_webhook_url: str = getenv("TELEGRAM_WEBHOOK_URL", "")
+    cors_allowed_origins: list[str] = field(
+        default_factory=lambda: parse_csv_env(getenv("CORS_ALLOWED_ORIGINS", ""))
+    )
 
 
 settings = Settings()
