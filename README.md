@@ -195,37 +195,43 @@ IF: resposta contém "created"?
 
 ## Variáveis de ambiente
 
-Copie o arquivo `.env.example` para `.env` e ajuste os valores se necessário.
+Copie o arquivo `.env.example` para `.env` e ajuste os valores conforme o ambiente.
 
-Variáveis disponíveis:
+```bash
+cp .env.example .env
+```
 
-- `APP_NAME`
-- `APP_ENV`
-- `LOG_LEVEL`
-- `DATABASE_URL`
-- `POSTGRES_DB`
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `POSTGRES_PORT`
-- `BACKEND_PORT`
-- `EMBEDDING_PROVIDER`
-- `EMBEDDING_MODEL`
-- `OPENAI_API_KEY`
-- `LLM_PROVIDER`
-- `LLM_MODEL`
-- `GROQ_API_KEY`
-- `RAG_MAX_AGE_DAYS`
-- `NEWS_RETENTION_DAYS`
-- `TELEGRAM_TOKEN`
-- `TELEGRAM_WEBHOOK_URL`
-- `VITE_API_PROXY_TARGET`
-- `VITE_API_URL`
-- `FRONTEND_PORT`
-- `N8N_HOST`
-- `N8N_PORT`
-- `N8N_PROTOCOL`
-- `N8N_WEBHOOK_URL`
-- `GENERIC_TIMEZONE`
+| Variável | Obrigatória | Uso |
+|----------|-------------|-----|
+| `APP_NAME` | Não | Nome exibido pela aplicação. |
+| `APP_ENV` | Não | Ambiente atual: `development` ou `production`. |
+| `LOG_LEVEL` | Não | Nível de logs do backend. |
+| `DATABASE_URL` | Sim | URL assíncrona usada pelo SQLAlchemy no backend. |
+| `POSTGRES_DB` | Sim | Nome do banco criado pelo container PostgreSQL. |
+| `POSTGRES_USER` | Sim | Usuário do PostgreSQL. |
+| `POSTGRES_PASSWORD` | Sim | Senha do PostgreSQL; altere em produção. |
+| `POSTGRES_PORT` | Não | Porta exposta pelo PostgreSQL no compose local. |
+| `BACKEND_PORT` | Não | Porta pública do backend no compose de produção. |
+| `EMBEDDING_PROVIDER` | Não | Provedor de embeddings: `local` ou `openai`. |
+| `EMBEDDING_MODEL` | Não | Modelo de embeddings; padrão local `all-MiniLM-L6-v2`. |
+| `OPENAI_API_KEY` | Condicional | Necessária para embeddings ou LLM via OpenAI. |
+| `LLM_PROVIDER` | Não | Provedor do LLM: `groq` ou `openai`. |
+| `LLM_MODEL` | Não | Modelo usado pelo gerador de respostas. |
+| `GROQ_API_KEY` | Condicional | Necessária quando `LLM_PROVIDER=groq`. |
+| `RAG_MAX_AGE_DAYS` | Não | Janela de recência usada pelo endpoint `/ask`. |
+| `NEWS_RETENTION_DAYS` | Não | Janela máxima de retenção das notícias no banco. |
+| `TELEGRAM_TOKEN` | Condicional | Token do bot; sem ele o webhook responde `503`. |
+| `TELEGRAM_WEBHOOK_URL` | Condicional | URL pública HTTPS do endpoint `/telegram/webhook`. |
+| `VITE_API_PROXY_TARGET` | Não | Destino do proxy usado somente pelo Vite em desenvolvimento. |
+| `VITE_API_URL` | Sim | URL pública da API embutida no build estático do frontend. |
+| `FRONTEND_PORT` | Não | Porta pública do frontend estático no compose de produção. |
+| `N8N_HOST` | Condicional | Domínio público do n8n em produção. |
+| `N8N_PORT` | Não | Porta pública do n8n. |
+| `N8N_PROTOCOL` | Condicional | Protocolo do n8n: `http` local ou `https` em produção. |
+| `N8N_WEBHOOK_URL` | Condicional | URL pública base dos webhooks do n8n. |
+| `GENERIC_TIMEZONE` | Não | Fuso horário usado pelo n8n. |
+
+Em produção, configure pelo menos `POSTGRES_PASSWORD`, `GROQ_API_KEY`, `VITE_API_URL`, `TELEGRAM_TOKEN`, `TELEGRAM_WEBHOOK_URL`, `N8N_HOST`, `N8N_PROTOCOL` e `N8N_WEBHOOK_URL` com valores reais.
 
 ## Como executar com Docker
 
