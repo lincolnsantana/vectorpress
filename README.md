@@ -367,6 +367,42 @@ Validação após o deploy:
 3. Abra a aba "Perguntar" e envie uma pergunta para validar o endpoint `/ask`.
 4. Se o navegador bloquear a requisição por CORS, confira se `CORS_ALLOWED_ORIGINS` no backend contém exatamente a origem exibida na barra de endereço do frontend, incluindo `https://`.
 
+## Webhook do Telegram em produção
+
+O bot do Telegram usa o endpoint público `POST /telegram/webhook`. Em produção, esse endpoint deve usar a URL HTTPS publicada pelo Cloudflare Tunnel.
+
+Configure o `.env` do backend:
+
+```bash
+TELEGRAM_TOKEN=<token-do-botfather>
+TELEGRAM_WEBHOOK_URL=https://api.seudominio.com/telegram/webhook
+```
+
+Com o backend rodando e a URL pública disponível, registre o webhook no Telegram:
+
+```bash
+curl -X POST "https://api.telegram.org/bot<TELEGRAM_TOKEN>/setWebhook" \
+  -d "url=https://api.seudominio.com/telegram/webhook"
+```
+
+Confira se o webhook foi registrado:
+
+```bash
+curl "https://api.telegram.org/bot<TELEGRAM_TOKEN>/getWebhookInfo"
+```
+
+Validação no Telegram:
+
+1. Envie `/today` para o bot e confirme se ele retorna as últimas manchetes.
+2. Envie `/list` para validar a listagem paginada.
+3. Envie `/ask uma pergunta sobre as notícias recentes` para validar o fluxo RAG.
+
+Se o endpoint `/telegram/webhook` responder `503`, confira se `TELEGRAM_TOKEN` está definido no ambiente do backend e reinicie o serviço:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build backend
+```
+
 ## Como executar localmente
 
 1. Crie e ative um ambiente virtual.
