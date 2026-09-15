@@ -17,6 +17,71 @@ AI Pulse é uma API para monitorar notícias sobre Inteligência Artificial e re
 ![Groq](https://img.shields.io/badge/Groq-LLM-F55036)
 ![pytest](https://img.shields.io/badge/pytest-tests-0A9EDC?logo=pytest&logoColor=white)
 
+## Visão geral
+
+O AI Pulse acompanha notícias sobre Inteligência Artificial via RSS, armazena os conteúdos no PostgreSQL com pgvector e permite consultar essas notícias por meio de RAG. O MVP também inclui uma interface web em React, um bot Telegram e automação com n8n para manter a base atualizada.
+
+## Demo
+
+- Frontend: a definir
+- API pública: a definir
+- Bot Telegram: a definir
+
+## Funcionalidades
+
+- Sincronização de notícias por RSS com deduplicação por URL.
+- Persistência de notícias, chunks e embeddings no PostgreSQL.
+- Busca vetorial com pgvector e respostas geradas por LLM usando apenas contexto recuperado.
+- Endpoint REST para consulta RAG em `POST /ask`.
+- Bot Telegram com comandos `/today`, `/list` e `/ask`.
+- Workflow n8n para sincronização automática a cada 6 horas.
+- Frontend React de tela única com abas de notícias e perguntas.
+- Deploy preparado para homelab com Cloudflare Tunnel e frontend na Vercel.
+
+## Arquitetura
+
+```text
+RSS Feeds
+  ↓
+FastAPI + Services
+  ↓
+PostgreSQL + pgvector
+  ↓
+RAG: chunks + embeddings + LLM
+  ↓
+Frontend React / Bot Telegram / n8n
+```
+
+## Stack tecnológica
+
+| Camada | Tecnologias |
+|--------|-------------|
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2, Pydantic v2 |
+| Banco | PostgreSQL 16, pgvector |
+| IA/RAG | LangChain, sentence-transformers, Groq API |
+| Frontend | React 18, Vite, TailwindCSS, shadcn/ui |
+| Automação | n8n |
+| Integração | Telegram Bot API |
+| Infra | Docker, Docker Compose, Cloudflare Tunnel, Vercel |
+| Testes | pytest, pytest-asyncio |
+
+## Índice
+
+- [Sprint 01 - Fundação](#sprint-01---fundação)
+- [Sprint 02 - Ingestão de Notícias](#sprint-02---ingestão-de-notícias)
+- [Sprint 03 - Base Vetorial e RAG](#sprint-03---base-vetorial-e-rag)
+- [Sprint 04 - Bot Telegram](#sprint-04---bot-telegram)
+- [Sprint 05 - Automação com n8n](#sprint-05---automação-com-n8n)
+- [Requisitos](#requisitos)
+- [Variáveis de ambiente](#variáveis-de-ambiente)
+- [Como executar com Docker](#como-executar-com-docker)
+- [Docker Compose de produção](#docker-compose-de-produção)
+- [Exposição do backend com Cloudflare Tunnel](#exposição-do-backend-com-cloudflare-tunnel)
+- [Deploy do frontend na Vercel](#deploy-do-frontend-na-vercel)
+- [Webhook do Telegram em produção](#webhook-do-telegram-em-produção)
+- [Workflow n8n em produção](#workflow-n8n-em-produção)
+- [Endpoints](#endpoints)
+
 ## Sprint 01 - Fundação
 
 Nesta etapa o projeto entrega:
