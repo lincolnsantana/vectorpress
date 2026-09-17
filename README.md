@@ -305,7 +305,6 @@ cp .env.example .env
 | `TELEGRAM_WEBHOOK_URL` | Condicional | URL pública HTTPS do endpoint `/telegram/webhook`. |
 | `VITE_API_PROXY_TARGET` | Não | Destino do proxy usado somente pelo Vite em desenvolvimento. |
 | `VITE_API_URL` | Sim | URL pública da API embutida no build estático do frontend. |
-| `FRONTEND_PORT` | Não | Porta pública do frontend estático no compose de produção. |
 | `N8N_HOST` | Condicional | Domínio público do n8n em produção. |
 | `N8N_PORT` | Não | Porta pública do n8n. |
 | `N8N_PROTOCOL` | Condicional | Protocolo do n8n: `http` local ou `https` em produção. |
@@ -330,7 +329,7 @@ O frontend (Vite dev server) roda em `http://localhost:5173` e faz proxy das cha
 
 ## Docker Compose de produção
 
-A Sprint 07 adiciona um compose separado para produção, mantendo o `docker-compose.yml` como ambiente local de desenvolvimento.
+A Sprint 07 adiciona um compose separado para o homelab, mantendo o `docker-compose.yml` como ambiente local de desenvolvimento. Em produção, o Compose executa apenas PostgreSQL, backend e n8n; o frontend é publicado separadamente na Vercel.
 
 ```bash
 docker compose -f docker-compose.prod.yml up --build -d
@@ -339,16 +338,9 @@ docker compose -f docker-compose.prod.yml up --build -d
 Serviços expostos:
 
 - API: `http://localhost:${BACKEND_PORT:-8000}`
-- Frontend estático: `http://localhost:${FRONTEND_PORT:-8080}`
 - n8n: `http://localhost:${N8N_PORT:-5678}`
 
-O PostgreSQL fica disponível apenas na rede interna do Compose. Para produção, configure `VITE_API_URL` com a URL pública HTTPS do backend antes de construir o frontend, por exemplo:
-
-```bash
-VITE_API_URL=https://api.seudominio.com docker compose -f docker-compose.prod.yml up --build -d
-```
-
-O serviço `n8n` persiste os dados no volume `n8n_data` e deve chamar o backend pela rede interna usando `http://backend:8000`.
+O PostgreSQL fica disponível apenas na rede interna do Compose. O serviço `n8n` persiste os dados no volume `n8n_data` e deve chamar o backend pela rede interna usando `http://backend:8000`. A variável `VITE_API_URL` deve ser configurada no projeto da Vercel, não no Compose de produção.
 
 ## Exposição do backend com Cloudflare Tunnel
 

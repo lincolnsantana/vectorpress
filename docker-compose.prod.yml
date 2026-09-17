@@ -31,18 +31,6 @@ services:
       postgres:
         condition: service_healthy
 
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_URL: ${VITE_API_URL}
-    container_name: ai-pulse-frontend-prod
-    restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-8080}:80"
-    depends_on:
-      - backend
-
   n8n:
     image: n8nio/n8n:latest
     container_name: ai-pulse-n8n-prod
