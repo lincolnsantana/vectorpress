@@ -41,6 +41,7 @@ services:
   frontend:
     build:
       context: ./frontend
+      target: development
     container_name: ai-pulse-frontend
     environment:
       VITE_API_PROXY_TARGET: http://backend:8000
