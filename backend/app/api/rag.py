@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends
+import logging
+
+import httpx
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -9,7 +12,21 @@ from app.rag.generator import get_generator
 from app.rag.retriever import Retriever
 from app.schemas.rag import AskRequest, AskResponse, SourceOut
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(tags=["rag"])
+
+
+def _upstream_detail(exc: httpx.HTTPStatusError) -> str:
+    """Mensagem curta do provedor, sem vazar corpo de resposta inteiro."""
+    try:
+        body = exc.response.json()
+    except ValueError:
+        return exc.response.text[:200]
+    error = body.get("error")
+    if isinstance(error, dict):
+        return str(error.get("message", ""))[:200]
+    return str(error or body)[:200]
 
 
 def get_rag_service() -> RAGService:
@@ -26,7 +43,23 @@ async def ask_question(
     session: AsyncSession = Depends(get_session),
     service: RAGService = Depends(get_rag_service),
 ) -> AskResponse:
-    answer, context = await service.ask(session, payload.question)
+    try:
+        answer, context = await service.ask(session, payload.question)
+    except httpx.HTTPStatusError as exc:
+        detail = _upstream_detail(exc)
+        logger.error(
+            "provedor de LLM respondeu %s: %s", exc.response.status_code, detail
+        )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Provedor de LLM respondeu {exc.response.status_code}: {detail}",
+        ) from exc
+    except httpx.RequestError as exc:
+        logger.error("falha de conexao com o provedor de LLM: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Nao foi possivel contatar o provedor de LLM.",
+        ) from exc
     sources: list[SourceOut] = []
     seen_urls: set[str] = set()
     for chunk in context:
