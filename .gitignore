@@ -223,3 +223,8 @@ frontend/node_modules/
 frontend/dist/
 !frontend/src/lib/
 !frontend/src/lib/*.js
+
+# Documentos internos de planejamento
+AGENTS.md
+SPEC.md
+ROADMAP.md
