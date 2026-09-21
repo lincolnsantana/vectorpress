@@ -1,19 +1,23 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from os import getenv
+
+
+def parse_csv_env(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
 
 
 @dataclass(frozen=True, slots=True)
 class Settings:
-    app_name: str = getenv("APP_NAME", "AI Pulse")
+    app_name: str = getenv("APP_NAME", "Vectorpress")
     app_env: str = getenv("APP_ENV", "development")
     log_level: str = getenv("LOG_LEVEL", "INFO")
     database_url: str = getenv(
         "DATABASE_URL",
-        "postgresql+asyncpg://ai_pulse:ai_pulse@postgres:5432/ai_pulse",
+        "postgresql+asyncpg://vectorpress:vectorpress@postgres:5432/vectorpress",
     )
-    postgres_db: str = getenv("POSTGRES_DB", "ai_pulse")
-    postgres_user: str = getenv("POSTGRES_USER", "ai_pulse")
-    postgres_password: str = getenv("POSTGRES_PASSWORD", "ai_pulse")
+    postgres_db: str = getenv("POSTGRES_DB", "vectorpress")
+    postgres_user: str = getenv("POSTGRES_USER", "vectorpress")
+    postgres_password: str = getenv("POSTGRES_PASSWORD", "vectorpress")
     postgres_port: int = int(getenv("POSTGRES_PORT", "5432"))
     embedding_provider: str = getenv("EMBEDDING_PROVIDER", "local")
     embedding_model: str = getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
@@ -25,6 +29,9 @@ class Settings:
     news_retention_days: int = int(getenv("NEWS_RETENTION_DAYS", "7"))
     telegram_token: str = getenv("TELEGRAM_TOKEN", "")
     telegram_webhook_url: str = getenv("TELEGRAM_WEBHOOK_URL", "")
+    cors_allowed_origins: list[str] = field(
+        default_factory=lambda: parse_csv_env(getenv("CORS_ALLOWED_ORIGINS", ""))
+    )
 
 
 settings = Settings()

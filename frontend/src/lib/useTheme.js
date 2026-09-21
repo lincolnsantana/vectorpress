@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-const THEME_KEY = "ai-pulse-theme";
+const THEME_KEY = "vectorpress-theme";
 
 function getInitialTheme() {
   return localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark";
