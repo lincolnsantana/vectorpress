@@ -6,7 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /build
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+# torch CPU primeiro: o wheel padrao arrasta ~3GB de dependencias CUDA que o
+# homelab nao usa, e o sentence-transformers aceita o torch ja instalado.
+RUN pip install --no-cache-dir --prefix=/install \
+      --extra-index-url https://download.pytorch.org/whl/cpu \
+      torch \
+ && pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.12-slim AS runtime
 
