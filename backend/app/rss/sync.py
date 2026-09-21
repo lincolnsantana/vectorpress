@@ -75,6 +75,12 @@ async def sync_news(session: AsyncSession | None = None) -> SyncSummary:
                                 news.image_url = image_url
                                 summary.updated += 1
                             continue
+                        if _is_expired(article, cutoff_retention):
+                            # o feed ainda serve artigos que a retencao ja
+                            # descartou; recria-los faria o sync reindexar
+                            # a base inteira a cada execucao
+                            summary.skipped += 1
+                            continue
                         news = News(
                             title=article.title,
                             url=article.url,
@@ -94,6 +100,12 @@ async def sync_news(session: AsyncSession | None = None) -> SyncSummary:
     finally:
         if owns_session:
             await session.close()
+
+
+def _is_expired(article: RawArticle, cutoff_retention: datetime | None) -> bool:
+    if cutoff_retention is None or article.published_at is None:
+        return False
+    return article.published_at < cutoff_retention
 
 
 async def _resolve_image(

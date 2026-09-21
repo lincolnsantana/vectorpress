@@ -199,3 +199,28 @@ async def test_sync_news_keeps_existing_image(
 
     assert existing.image_url == "https://example.com/dup/old.jpg"
     assert session.committed
+
+OLD_FEED = b"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+  <item>
+    <title>Artigo antigo</title>
+    <link>https://example.com/old</link>
+    <pubDate>Mon, 01 Jan 2024 10:00:00 +0000</pubDate>
+  </item>
+</channel></rss>
+"""
+
+
+async def test_sync_news_does_not_recreate_articles_past_retention(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """O feed segue servindo artigos que a retencao acabou de apagar."""
+    responses = {source.url: OLD_FEED for source in SOURCES}
+    _patch_http(monkeypatch, responses)
+    session = FakeSession(existing_news=[])
+
+    summary = await sync_news(session=session)
+
+    assert summary.created == 0
+    assert summary.skipped == len(SOURCES)
+    assert session.added == []
