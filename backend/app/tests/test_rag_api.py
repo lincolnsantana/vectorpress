@@ -89,3 +89,50 @@ async def test_ask_deduplicates_sources_by_url(
     data = response.json()
     assert data["answer"] == "Resposta."
     assert [source["url"] for source in data["sources"]] == [same_url]
+
+
+async def test_ask_maps_llm_provider_error_to_502(
+    client: httpx.AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+    response = httpx.Response(
+        404,
+        request=request,
+        json={"error": {"message": "The model `x` does not exist"}},
+    )
+
+    class FakeService:
+        async def ask(self, session: object, question: str) -> tuple[str, list[RetrievedChunk]]:
+            raise httpx.HTTPStatusError("404", request=request, response=response)
+
+    app.dependency_overrides[get_session] = FakeSession
+    app.dependency_overrides[rag_api.get_rag_service] = lambda: FakeService()
+    try:
+        result = await client.post("/ask", json={"question": "O que houve?"})
+    finally:
+        app.dependency_overrides.pop(get_session, None)
+        app.dependency_overrides.pop(rag_api.get_rag_service, None)
+
+    assert result.status_code == 502
+    assert "404" in result.json()["detail"]
+    assert "does not exist" in result.json()["detail"]
+
+
+async def test_ask_maps_llm_connection_error_to_504(
+    client: httpx.AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeService:
+        async def ask(self, session: object, question: str) -> tuple[str, list[RetrievedChunk]]:
+            raise httpx.ConnectTimeout("timeout")
+
+    app.dependency_overrides[get_session] = FakeSession
+    app.dependency_overrides[rag_api.get_rag_service] = lambda: FakeService()
+    try:
+        result = await client.post("/ask", json={"question": "O que houve?"})
+    finally:
+        app.dependency_overrides.pop(get_session, None)
+        app.dependency_overrides.pop(rag_api.get_rag_service, None)
+
+    assert result.status_code == 504
