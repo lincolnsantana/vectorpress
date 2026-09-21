@@ -1,7 +1,7 @@
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: ai-pulse-postgres-prod
+    container_name: vectorpress-postgres-prod
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -19,7 +19,7 @@ services:
   backend:
     build:
       context: ./backend
-    container_name: ai-pulse-backend-prod
+    container_name: vectorpress-backend-prod
     restart: unless-stopped
     env_file:
       - .env
@@ -33,7 +33,7 @@ services:
 
   n8n:
     image: n8nio/n8n:latest
-    container_name: ai-pulse-n8n-prod
+    container_name: vectorpress-n8n-prod
     restart: unless-stopped
     environment:
       N8N_HOST: ${N8N_HOST}

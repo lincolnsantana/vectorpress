@@ -1,6 +1,6 @@
-# AI Pulse
+# Vectorpress
 
-AI Pulse é uma API para monitorar notícias sobre Inteligência Artificial e responder perguntas sobre elas usando Retrieval-Augmented Generation (RAG) com base vetorial no PostgreSQL (pgvector).
+Vectorpress é uma API para monitorar notícias sobre Inteligência Artificial e responder perguntas sobre elas usando Retrieval-Augmented Generation (RAG) com base vetorial no PostgreSQL (pgvector).
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
@@ -19,7 +19,7 @@ AI Pulse é uma API para monitorar notícias sobre Inteligência Artificial e re
 
 ## Visão geral
 
-O AI Pulse acompanha notícias sobre Inteligência Artificial via RSS, armazena os conteúdos no PostgreSQL com pgvector e permite consultar essas notícias por meio de RAG. O MVP também inclui uma interface web em React, um bot Telegram e automação com n8n para manter a base atualizada.
+O Vectorpress acompanha notícias sobre Inteligência Artificial via RSS, armazena os conteúdos no PostgreSQL com pgvector e permite consultar essas notícias por meio de RAG. O MVP também inclui uma interface web em React, um bot Telegram e automação com n8n para manter a base atualizada.
 
 ## Demo
 
@@ -356,14 +356,14 @@ Passo a passo:
 
 ```bash
 cloudflared tunnel login
-cloudflared tunnel create ai-pulse-api
-cloudflared tunnel route dns ai-pulse-api api.seudominio.com
+cloudflared tunnel create vectorpress-api
+cloudflared tunnel route dns vectorpress-api api.seudominio.com
 ```
 
 Crie o arquivo `~/.cloudflared/config.yml` na máquina de produção:
 
 ```yaml
-tunnel: ai-pulse-api
+tunnel: vectorpress-api
 credentials-file: /home/seu-usuario/.cloudflared/<tunnel-id>.json
 
 ingress:
@@ -375,7 +375,7 @@ ingress:
 Inicie o túnel:
 
 ```bash
-cloudflared tunnel run ai-pulse-api
+cloudflared tunnel run vectorpress-api
 ```
 
 Depois que a URL pública estiver respondendo, atualize o `.env` de produção:
@@ -383,7 +383,7 @@ Depois que a URL pública estiver respondendo, atualize o `.env` de produção:
 ```bash
 VITE_API_URL=https://api.seudominio.com
 TELEGRAM_WEBHOOK_URL=https://api.seudominio.com/telegram/webhook
-CORS_ALLOWED_ORIGINS=https://ai-pulse.vercel.app
+CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app
 ```
 
 Valide a exposição pública:
@@ -423,13 +423,13 @@ Variável de ambiente na Vercel:
 Depois do primeiro deploy, copie o domínio gerado pela Vercel e libere essa origem no backend:
 
 ```bash
-CORS_ALLOWED_ORIGINS=https://ai-pulse.vercel.app
+CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app
 ```
 
 Se usar mais de um domínio, separe as origens por vírgula:
 
 ```bash
-CORS_ALLOWED_ORIGINS=https://ai-pulse.vercel.app,https://www.seudominio.com
+CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app,https://www.seudominio.com
 ```
 
 Validação após o deploy:
@@ -562,7 +562,7 @@ Retorna a mensagem inicial da API.
 Exemplo de resposta:
 
 ```json
-{"message":"AI Pulse API"}
+{"message":"Vectorpress API"}
 ```
 
 ### `GET /health`

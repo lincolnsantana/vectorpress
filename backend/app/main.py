@@ -47,7 +47,7 @@ if settings.cors_allowed_origins:
 
 @app.get("/")
 async def root() -> dict[str, str]:
-    return {"message": "AI Pulse API"}
+    return {"message": "Vectorpress API"}
 
 
 app.include_router(health_router)

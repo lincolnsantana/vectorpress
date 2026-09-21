@@ -1,1 +1,1 @@
-"""AI Pulse backend application package."""
+"""Vectorpress backend application package."""

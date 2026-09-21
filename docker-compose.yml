@@ -1,18 +1,18 @@
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: ai-pulse-postgres
+    container_name: vectorpress-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-ai_pulse}
-      POSTGRES_USER: ${POSTGRES_USER:-ai_pulse}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ai_pulse}
+      POSTGRES_DB: ${POSTGRES_DB:-vectorpress}
+      POSTGRES_USER: ${POSTGRES_USER:-vectorpress}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vectorpress}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro,z
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ai_pulse} -d ${POSTGRES_DB:-ai_pulse}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vectorpress} -d ${POSTGRES_DB:-vectorpress}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,7 +20,7 @@ services:
   backend:
     build:
       context: ./backend
-    container_name: ai-pulse-backend
+    container_name: vectorpress-backend
     environment:
       APP_ENV: ${APP_ENV:-development}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
@@ -42,7 +42,7 @@ services:
     build:
       context: ./frontend
       target: development
-    container_name: ai-pulse-frontend
+    container_name: vectorpress-frontend
     environment:
       VITE_API_PROXY_TARGET: http://backend:8000
     ports:

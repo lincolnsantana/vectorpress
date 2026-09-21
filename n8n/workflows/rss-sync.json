@@ -1,5 +1,5 @@
 {
-  "name": "ai-pulse",
+  "name": "vectorpress",
   "nodes": [
     {
       "parameters": {
@@ -84,7 +84,7 @@
       "credentials": {
         "telegramApi": {
           "id": "Ls5PopKrk0zjOuq9",
-          "name": "ai-pulse api teste"
+          "name": "vectorpress api teste"
         }
       }
     },
@@ -106,7 +106,7 @@
       "credentials": {
         "telegramApi": {
           "id": "Ls5PopKrk0zjOuq9",
-          "name": "ai-pulse api teste"
+          "name": "vectorpress api teste"
         }
       }
     },

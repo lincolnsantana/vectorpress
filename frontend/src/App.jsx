@@ -18,7 +18,7 @@ function App() {
           <div>
             <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground">
               📰
-              AI Pulse
+              Vectorpress
             </h1>
             <p className="text-sm text-muted-foreground">
               Notícias de IA com consultas baseadas em RAG
