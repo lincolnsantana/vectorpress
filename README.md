@@ -23,9 +23,12 @@ O Vectorpress acompanha notícias sobre Inteligência Artificial via RSS, armaze
 
 ## Demo
 
-- Frontend: a definir
-- API pública: a definir
+- Frontend: <https://vectorpress.vercel.app>
+- API pública: <https://physiopathologic-marlys-unallayable.ngrok-free.dev>
 - Bot Telegram: a definir
+
+O backend roda em um homelab pessoal e é publicado por um túnel reverso. Se a API
+estiver fora do ar, o frontend carrega mas não exibe notícias.
 
 ## Funcionalidades
 
@@ -36,7 +39,7 @@ O Vectorpress acompanha notícias sobre Inteligência Artificial via RSS, armaze
 - Bot Telegram com comandos `/today`, `/list` e `/ask`.
 - Workflow n8n para sincronização automática a cada 6 horas.
 - Frontend React de tela única com abas de notícias e perguntas.
-- Deploy preparado para homelab com Cloudflare Tunnel e frontend na Vercel.
+- Deploy em homelab com túnel reverso (ngrok) e frontend na Vercel.
 
 ## Arquitetura
 
@@ -62,7 +65,7 @@ Frontend React / Bot Telegram / n8n
 | Frontend | React 18, Vite, TailwindCSS, shadcn/ui |
 | Automação | n8n |
 | Integração | Telegram Bot API |
-| Infra | Docker, Docker Compose, Cloudflare Tunnel, Vercel |
+| Infra | Docker, Docker Compose, ngrok, Vercel |
 | Testes | pytest, pytest-asyncio |
 
 ## Índice
@@ -76,7 +79,7 @@ Frontend React / Bot Telegram / n8n
 - [Variáveis de ambiente](#variáveis-de-ambiente)
 - [Como executar com Docker](#como-executar-com-docker)
 - [Docker Compose de produção](#docker-compose-de-produção)
-- [Exposição do backend com Cloudflare Tunnel](#exposição-do-backend-com-cloudflare-tunnel)
+- [Exposição pública do backend](#exposição-pública-do-backend)
 - [Deploy do frontend na Vercel](#deploy-do-frontend-na-vercel)
 - [Webhook do Telegram em produção](#webhook-do-telegram-em-produção)
 - [Workflow n8n em produção](#workflow-n8n-em-produção)
@@ -203,7 +206,7 @@ Nesta etapa o projeto entrega:
 1. Crie um bot com o [@BotFather](https://t.me/BotFather) e copie o token.
 2. Adicione no `.env`:
    - `TELEGRAM_TOKEN` — token do bot;
-   - `TELEGRAM_WEBHOOK_URL` — URL pública que o Telegram chamará (ex: `https://seudominio.com/telegram/webhook`).
+   - `TELEGRAM_WEBHOOK_URL` — URL pública que o Telegram chamará (ex: `https://<sua-url-publica>/telegram/webhook`).
 3. Suba a aplicação e registre o webhook:
 
 ```bash
@@ -299,6 +302,9 @@ cp .env.example .env
 | `LLM_PROVIDER` | Não | Provedor do LLM: `groq` ou `openai`. |
 | `LLM_MODEL` | Não | Modelo usado pelo gerador de respostas. |
 | `GROQ_API_KEY` | Condicional | Necessária quando `LLM_PROVIDER=groq`. |
+| `SYNC_TOKEN` | Recomendada em produção | Quando preenchida, `POST /news/sync` exige o header `X-Sync-Token`. Vazia deixa o endpoint aberto. |
+| `ASK_RATE_LIMIT` | Não | Chamadas ao `/ask` por IP na janela; `0` desativa o limite. Padrão `10`. |
+| `ASK_RATE_WINDOW_SECONDS` | Não | Tamanho da janela do limite, em segundos. Padrão `60`. |
 | `RAG_MAX_AGE_DAYS` | Não | Janela de recência usada pelo endpoint `/ask`. |
 | `NEWS_RETENTION_DAYS` | Não | Janela máxima de retenção das notícias no banco. |
 | `TELEGRAM_TOKEN` | Condicional | Token do bot; sem ele o webhook responde `503`. |
@@ -310,8 +316,16 @@ cp .env.example .env
 | `N8N_PROTOCOL` | Condicional | Protocolo do n8n: `http` local ou `https` em produção. |
 | `N8N_WEBHOOK_URL` | Condicional | URL pública base dos webhooks do n8n. |
 | `GENERIC_TIMEZONE` | Não | Fuso horário usado pelo n8n. |
+| `NGROK_AUTHTOKEN` | Condicional | Token do agente ngrok, quando o túnel é feito por ele. |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Condicional | Token do túnel nomeado do Cloudflare, quando há domínio próprio. |
 
-Em produção, configure pelo menos `POSTGRES_PASSWORD`, `GROQ_API_KEY`, `VITE_API_URL`, `CORS_ALLOWED_ORIGINS`, `TELEGRAM_TOKEN`, `TELEGRAM_WEBHOOK_URL`, `N8N_HOST`, `N8N_PROTOCOL` e `N8N_WEBHOOK_URL` com valores reais.
+Em produção, configure pelo menos `POSTGRES_PASSWORD`, `GROQ_API_KEY`, `SYNC_TOKEN`,
+`VITE_API_URL`, `CORS_ALLOWED_ORIGINS`, `TELEGRAM_TOKEN`, `TELEGRAM_WEBHOOK_URL`,
+`N8N_HOST`, `N8N_PROTOCOL` e `N8N_WEBHOOK_URL` com valores reais.
+
+Não use comentários na mesma linha de um valor. O `env_file` do Docker Compose só
+descarta linhas que começam com `#`, então `GROQ_API_KEY=abc  # chave` faz a chave
+chegar ao container com o comentário embutido.
 
 ## Como executar com Docker
 
@@ -342,66 +356,78 @@ Serviços expostos:
 
 O PostgreSQL fica disponível apenas na rede interna do Compose. O serviço `n8n` persiste os dados no volume `n8n_data` e deve chamar o backend pela rede interna usando `http://backend:8000`. A variável `VITE_API_URL` deve ser configurada no projeto da Vercel, não no Compose de produção.
 
-## Exposição do backend com Cloudflare Tunnel
+## Exposição pública do backend
 
-A Sprint 07 usa Cloudflare Tunnel para publicar o backend do homelab com HTTPS, sem abrir portas no roteador. O túnel deve apontar a URL pública para o serviço local do backend em `http://localhost:8000`.
+O backend roda em um homelab, sem IP público e sem portas abertas no roteador. A
+API chega à internet por um túnel reverso: o agente abre uma conexão de saída
+para o provedor, que devolve uma URL HTTPS apontando para o serviço local.
 
-Pré-requisitos:
+O `docker-compose.prod.yml` publica o backend apenas em `127.0.0.1`, de modo que
+o túnel é o único caminho de entrada.
 
-- domínio gerenciado pela Cloudflare;
-- `cloudflared` instalado na máquina que roda o Docker Compose de produção;
-- backend rodando com `docker compose -f docker-compose.prod.yml up --build -d`.
+### Opção em uso: ngrok
 
-Passo a passo:
+Escolhido por não exigir domínio próprio. O plano gratuito fornece um domínio
+estático, o que é essencial: uma URL que muda a cada reinício quebraria o build
+do frontend na Vercel e o webhook do Telegram, que gravam o endereço.
 
-```bash
-cloudflared tunnel login
-cloudflared tunnel create vectorpress-api
-cloudflared tunnel route dns vectorpress-api api.seudominio.com
-```
-
-Crie o arquivo `~/.cloudflared/config.yml` na máquina de produção:
-
-```yaml
-tunnel: vectorpress-api
-credentials-file: /home/seu-usuario/.cloudflared/<tunnel-id>.json
-
-ingress:
-  - hostname: api.seudominio.com
-    service: http://localhost:8000
-  - service: http_status:404
-```
-
-Inicie o túnel:
+Reserve o domínio em <https://dashboard.ngrok.com/domains> e anote o authtoken.
+O agente sobe como container na mesma rede do Compose, o que permite alcançar o
+backend por `backend:8000` sem passar pela internet:
 
 ```bash
-cloudflared tunnel run vectorpress-api
+docker run -d --name vectorpress-ngrok \
+  --network vectorpress_default \
+  --restart unless-stopped \
+  -e NGROK_AUTHTOKEN=<seu-token> \
+  ngrok/ngrok:latest \
+  http backend:8000 --url=https://<seu-dominio>.ngrok-free.dev
 ```
 
-Depois que a URL pública estiver respondendo, atualize o `.env` de produção:
+```bash
+curl https://<seu-dominio>.ngrok-free.dev/health
+```
+
+O plano gratuito serve uma página de aviso antes de responder a requisições de
+navegador. O cliente HTTP do frontend envia o header `ngrok-skip-browser-warning`
+para contornar isso; veja `frontend/src/lib/api.js`.
+
+### Alternativa com domínio próprio: Cloudflare Tunnel
+
+Com um domínio gerenciado pela Cloudflare, o serviço `cloudflared` já definido no
+`docker-compose.prod.yml` substitui o ngrok e entrega um hostname próprio, do tipo
+`api.seudominio.com`.
+
+Crie o túnel em Zero Trust → Networks → Tunnels, copie o token para
+`CLOUDFLARE_TUNNEL_TOKEN` no `.env` e aponte o *public hostname* para
+`HTTP → backend:8000`. Depois:
 
 ```bash
-VITE_API_URL=https://api.seudominio.com
-TELEGRAM_WEBHOOK_URL=https://api.seudominio.com/telegram/webhook
+docker rm -f vectorpress-ngrok
+docker compose -f docker-compose.prod.yml up -d cloudflared
+```
+
+### Depois de publicar
+
+Atualize o `.env` de produção com a URL escolhida:
+
+```bash
+TELEGRAM_WEBHOOK_URL=https://<sua-url>/telegram/webhook
 CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app
 ```
 
-Valide a exposição pública:
-
-```bash
-curl https://api.seudominio.com/health
-```
-
-Para manter o túnel ativo em produção, instale o serviço do `cloudflared` conforme o sistema operacional do homelab e execute o tunnel como serviço de sistema.
+E configure `VITE_API_URL` no projeto da Vercel, não no Compose: o valor é
+embutido no build estático, então toda mudança de URL exige um novo deploy do
+frontend.
 
 ## Deploy do frontend na Vercel
 
 O frontend é um build estático React/Vite. Na Vercel, ele deve ser publicado a partir da pasta `frontend` e precisa receber a URL pública HTTPS do backend na variável `VITE_API_URL`.
 
-Antes de publicar, confirme que o backend já está acessível pelo Cloudflare Tunnel:
+Antes de publicar, confirme que o backend já está acessível pelo túnel:
 
 ```bash
-curl https://api.seudominio.com/health
+curl https://<sua-url-publica>/health
 ```
 
 Configuração do projeto na Vercel:
@@ -418,7 +444,7 @@ Variável de ambiente na Vercel:
 
 | Nome | Valor |
 |------|-------|
-| `VITE_API_URL` | `https://api.seudominio.com` |
+| `VITE_API_URL` | `https://<sua-url-publica>` |
 
 Depois do primeiro deploy, copie o domínio gerado pela Vercel e libere essa origem no backend:
 
@@ -429,7 +455,7 @@ CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app
 Se usar mais de um domínio, separe as origens por vírgula:
 
 ```bash
-CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app,https://www.seudominio.com
+CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app,https://www.seudominio.com  # dominios adicionais, se houver
 ```
 
 Validação após o deploy:
@@ -441,20 +467,20 @@ Validação após o deploy:
 
 ## Webhook do Telegram em produção
 
-O bot do Telegram usa o endpoint público `POST /telegram/webhook`. Em produção, esse endpoint deve usar a URL HTTPS publicada pelo Cloudflare Tunnel.
+O bot do Telegram usa o endpoint público `POST /telegram/webhook`. Em produção, esse endpoint deve usar a URL HTTPS publicada pelo túnel.
 
 Configure o `.env` do backend:
 
 ```bash
 TELEGRAM_TOKEN=<token-do-botfather>
-TELEGRAM_WEBHOOK_URL=https://api.seudominio.com/telegram/webhook
+TELEGRAM_WEBHOOK_URL=https://<sua-url-publica>/telegram/webhook
 ```
 
 Com o backend rodando e a URL pública disponível, registre o webhook no Telegram:
 
 ```bash
 curl -X POST "https://api.telegram.org/bot<TELEGRAM_TOKEN>/setWebhook" \
-  -d "url=https://api.seudominio.com/telegram/webhook"
+  -d "url=https://<sua-url-publica>/telegram/webhook"
 ```
 
 Confira se o webhook foi registrado:
@@ -485,20 +511,32 @@ Se o n8n estiver rodando no `docker-compose.prod.yml`, configure o nó **HTTP Re
 http://backend:8000/news/sync
 ```
 
-Se o n8n estiver fora do Compose, por exemplo no n8n Cloud, configure o nó **HTTP Request** com a URL pública do Cloudflare Tunnel:
+Se o n8n estiver fora do Compose, por exemplo no n8n Cloud, configure o nó **HTTP Request** com a URL pública do túnel:
 
 ```text
-https://api.seudominio.com/news/sync
+https://<sua-url-publica>/news/sync
 ```
 
 Checklist de configuração no editor do n8n:
 
 1. Importe `n8n/workflows/rss-sync.json`.
-2. Abra o nó **HTTP Request** e substitua `https://SEU-SUB.ngrok-free.app/news/sync`.
-3. Crie ou selecione a credencial **Telegram** nos nós de notificação.
-4. Substitua `seu_chat_id_adm` pelo chat ID do administrador.
-5. Execute **Test workflow** e confirme que o retorno contém `created`, `skipped`, `errors` e `sources`.
-6. Ative o workflow somente depois do teste manual passar.
+2. Abra o nó **HTTP Request** e ajuste a URL conforme a tabela acima.
+3. Ainda no nó, adicione o header `X-Sync-Token` com o valor de `SYNC_TOKEN`.
+   Sem ele o backend responde `401`. Uma credencial **Header Auth** guarda o
+   segredo criptografado, em vez de deixá-lo visível no workflow.
+4. Crie ou selecione a credencial **Telegram** nos nós de notificação, ou
+   desative esses nós se o bot ainda não estiver configurado.
+5. Substitua `seu_chat_id_adm` pelo chat ID do administrador.
+6. Execute **Test workflow** e confirme que o retorno contém `created`, `skipped`, `errors` e `sources`.
+7. Salve antes de ativar: o n8n agenda a versão salva, não a que está na tela.
+8. Ative o workflow somente depois do teste manual passar.
+
+O n8n fica acessível apenas em `127.0.0.1` no homelab. Para abrir o editor a
+partir de outra máquina, use um túnel SSH:
+
+```bash
+ssh -L 5678:localhost:5678 usuario@homelab
+```
 
 Para validar pelo container do n8n no Compose de produção, execute uma chamada manual a partir da mesma rede:
 
