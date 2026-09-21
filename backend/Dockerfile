@@ -29,7 +29,9 @@ RUN apt-get update \
 COPY --from=builder /install /install
 COPY app ./app
 
-RUN useradd --create-home --uid 10001 appuser
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p /home/appuser/.cache \
+    && chown -R appuser:appuser /home/appuser/.cache
 USER appuser
 
 EXPOSE 8000
