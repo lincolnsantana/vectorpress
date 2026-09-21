@@ -5,7 +5,7 @@ import MessageBubble from "@/components/MessageBubble";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { askQuestion } from "@/lib/api";
+import { askQuestion, isApiOffline } from "@/lib/api";
 
 function AskPanel() {
   const [messages, setMessages] = useState([]);
@@ -30,12 +30,14 @@ function AskPanel() {
         ...prev,
         { role: "assistant", content: result.answer, sources: result.sources || [] },
       ]);
-    } catch {
+    } catch (err) {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Não foi possível processar a pergunta. Tente novamente.",
+          content: isApiOffline(err)
+            ? "A API está temporariamente indisponível. Ela roda em um servidor pessoal e pode estar fora do ar por manutenção. Tente novamente em instantes."
+            : "Não foi possível processar a pergunta. Tente novamente.",
         },
       ]);
     } finally {

@@ -1,6 +1,7 @@
 import { Laptop, Moon, Sun } from "lucide-react";
 import { useRef } from "react";
 
+import ApiStatusBanner from "@/components/ApiStatusBanner";
 import AskPanel from "@/components/AskPanel";
 import NewsList from "@/components/NewsList";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,8 @@ function App() {
           </Button>
         </div>
       </header>
+
+      <ApiStatusBanner />
 
       <main className="flex w-full flex-1 flex-col gap-6 px-6 py-8 lg:flex-row lg:overflow-hidden">
         <section ref={newsScrollRef} className="w-full lg:w-[70%] lg:overflow-y-auto">

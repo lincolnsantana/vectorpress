@@ -8,6 +8,18 @@ const api = axios.create({
   headers: { "ngrok-skip-browser-warning": "true" },
 });
 
+// A API roda em um homelab: quando ele esta desligado nao ha resposta HTTP, e
+// quando o tunel esta no ar sem o backend atras dele vem um erro de gateway.
+export function isApiOffline(error) {
+  const status = error?.response?.status;
+  return status === undefined || status === 502 || status === 503 || status === 504;
+}
+
+export async function checkHealth() {
+  const { data } = await api.get("/health", { timeout: 8000 });
+  return data;
+}
+
 export async function fetchNews({ limit = 20, offset = 0 } = {}) {
   const { data } = await api.get("/news", { params: { limit, offset } });
   return data;
