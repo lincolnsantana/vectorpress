@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.security import require_sync_token
 from app.database.connection import get_session
 from app.database.models import News
 from app.rag.indexer import index_news
@@ -14,7 +15,12 @@ from app.utils.helpers import make_summary
 router = APIRouter(prefix="/news", tags=["news"])
 
 
-@router.post("/sync", response_model=SyncResponse, status_code=status.HTTP_200_OK)
+@router.post(
+    "/sync",
+    response_model=SyncResponse,
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_sync_token)],
+)
 async def sync_news_endpoint() -> SyncResponse:
     summary = await sync_news()
     indexed = await index_news()

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.security import enforce_ask_rate_limit
 from app.database.connection import get_session
 from app.rag.ask import RAGService
 from app.rag.embeddings import get_embeddings_provider
@@ -37,7 +38,11 @@ def get_rag_service() -> RAGService:
     )
 
 
-@router.post("/ask", response_model=AskResponse)
+@router.post(
+    "/ask",
+    response_model=AskResponse,
+    dependencies=[Depends(enforce_ask_rate_limit)],
+)
 async def ask_question(
     payload: AskRequest,
     session: AsyncSession = Depends(get_session),
