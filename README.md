@@ -309,6 +309,7 @@ cp .env.example .env
 | `NEWS_RETENTION_DAYS` | Não | Janela máxima de retenção das notícias no banco. |
 | `TELEGRAM_TOKEN` | Condicional | Token do bot; sem ele o webhook responde `503`. |
 | `TELEGRAM_WEBHOOK_URL` | Condicional | URL pública HTTPS do endpoint `/telegram/webhook`. |
+| `TELEGRAM_WEBHOOK_SECRET` | Recomendada em produção | Quando preenchida, o webhook só aceita updates com o header `X-Telegram-Bot-Api-Secret-Token`. |
 | `VITE_API_PROXY_TARGET` | Não | Destino do proxy usado somente pelo Vite em desenvolvimento. |
 | `VITE_API_URL` | Sim | URL pública da API embutida no build estático do frontend. |
 | `N8N_HOST` | Condicional | Domínio público do n8n em produção. |
@@ -480,8 +481,14 @@ Com o backend rodando e a URL pública disponível, registre o webhook no Telegr
 
 ```bash
 curl -X POST "https://api.telegram.org/bot<TELEGRAM_TOKEN>/setWebhook" \
-  -d "url=https://<sua-url-publica>/telegram/webhook"
+  -d "url=https://<sua-url-publica>/telegram/webhook" \
+  -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
 ```
+
+O endpoint é público, então sem o `secret_token` qualquer pessoa pode forjar um
+update e acionar os comandos do bot, incluindo o `/ask`, que consome cota do LLM.
+Com ele configurado, o Telegram passa a enviar o header
+`X-Telegram-Bot-Api-Secret-Token` e o backend rejeita o resto com `403`.
 
 Confira se o webhook foi registrado:
 

@@ -7,6 +7,7 @@ from app.core.security import (
     SlidingWindowLimiter,
     client_ip,
     require_sync_token,
+    require_telegram_secret,
 )
 
 
@@ -82,3 +83,40 @@ async def test_sync_token_accepts_correct_value(
     )
 
     assert await require_sync_token(x_sync_token="segredo") is None
+
+
+async def test_telegram_secret_is_optional_when_not_configured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.core.security.settings", SimpleNamespace(telegram_webhook_secret="")
+    )
+
+    assert await require_telegram_secret(x_telegram_bot_api_secret_token="") is None
+
+
+async def test_telegram_secret_rejects_forged_update(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.core.security.settings",
+        SimpleNamespace(telegram_webhook_secret="segredo"),
+    )
+
+    with pytest.raises(HTTPException) as excinfo:
+        await require_telegram_secret(x_telegram_bot_api_secret_token="")
+
+    assert excinfo.value.status_code == 403
+
+
+async def test_telegram_secret_accepts_correct_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.core.security.settings",
+        SimpleNamespace(telegram_webhook_secret="segredo"),
+    )
+
+    assert (
+        await require_telegram_secret(x_telegram_bot_api_secret_token="segredo") is None
+    )
