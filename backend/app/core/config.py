@@ -29,6 +29,7 @@ class Settings:
     news_retention_days: int = int(getenv("NEWS_RETENTION_DAYS", "7"))
     telegram_token: str = getenv("TELEGRAM_TOKEN", "")
     telegram_webhook_url: str = getenv("TELEGRAM_WEBHOOK_URL", "")
+    telegram_webhook_secret: str = getenv("TELEGRAM_WEBHOOK_SECRET", "")
     sync_token: str = getenv("SYNC_TOKEN", "")
     ask_rate_limit: int = int(getenv("ASK_RATE_LIMIT", "10"))
     ask_rate_window_seconds: int = int(getenv("ASK_RATE_WINDOW_SECONDS", "60"))

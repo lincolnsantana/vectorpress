@@ -20,6 +20,21 @@ async def require_sync_token(
         )
 
 
+async def require_telegram_secret(
+    x_telegram_bot_api_secret_token: str = Header(default=""),
+) -> None:
+    """Confere o secret_token que o Telegram envia em cada update."""
+    if not settings.telegram_webhook_secret:
+        return
+    if not compare_digest(
+        x_telegram_bot_api_secret_token, settings.telegram_webhook_secret
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Origem nao autorizada.",
+        )
+
+
 def client_ip(request: Request) -> str:
     """IP real do cliente, considerando o proxy do tunel na frente da API."""
     forwarded = request.headers.get("x-forwarded-for", "")
