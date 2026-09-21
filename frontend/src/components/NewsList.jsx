@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import NewsCard from "@/components/NewsCard";
-import { fetchNews } from "@/lib/api";
+import { fetchNews, isApiOffline } from "@/lib/api";
 
 const PAGE_SIZE = 20;
 
@@ -28,9 +28,13 @@ function NewsList({ scrollRef }) {
           setNews(data.items);
           setTotal(data.total);
         }
-      } catch {
+      } catch (err) {
         if (active) {
-          setError("Não foi possível carregar as notícias.");
+          setError(
+            isApiOffline(err)
+              ? "A API está temporariamente indisponível. Tente novamente em instantes."
+              : "Não foi possível carregar as notícias.",
+          );
         }
       } finally {
         if (active) {
@@ -54,8 +58,12 @@ function NewsList({ scrollRef }) {
       const data = await fetchNews({ limit: PAGE_SIZE, offset: news.length });
       setNews((prev) => [...prev, ...data.items]);
       setTotal(data.total);
-    } catch {
-      setError("Não foi possível carregar mais notícias.");
+    } catch (err) {
+      setError(
+        isApiOffline(err)
+          ? "A API está temporariamente indisponível. Tente novamente em instantes."
+          : "Não foi possível carregar mais notícias.",
+      );
     } finally {
       loadingMoreRef.current = false;
       setLoadingMore(false);
