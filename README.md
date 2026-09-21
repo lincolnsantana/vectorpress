@@ -23,7 +23,7 @@ O Vectorpress acompanha notícias sobre Inteligência Artificial via RSS, armaze
 
 ## Demo
 
-- Frontend: <https://vectorpress.vercel.app>
+- Frontend: <https://vectorpress-zeta.vercel.app>
 - API pública: <https://physiopathologic-marlys-unallayable.ngrok-free.dev>
 - Bot Telegram: a definir
 
@@ -414,7 +414,7 @@ Atualize o `.env` de produção com a URL escolhida:
 
 ```bash
 TELEGRAM_WEBHOOK_URL=https://<sua-url>/telegram/webhook
-CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app
+CORS_ALLOWED_ORIGINS=https://vectorpress-zeta.vercel.app
 ```
 
 E configure `VITE_API_URL` no projeto da Vercel, não no Compose: o valor é
@@ -450,13 +450,13 @@ Variável de ambiente na Vercel:
 Depois do primeiro deploy, copie o domínio gerado pela Vercel e libere essa origem no backend:
 
 ```bash
-CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app
+CORS_ALLOWED_ORIGINS=https://vectorpress-zeta.vercel.app
 ```
 
 Se usar mais de um domínio, separe as origens por vírgula:
 
 ```bash
-CORS_ALLOWED_ORIGINS=https://vectorpress.vercel.app,https://www.seudominio.com  # dominios adicionais, se houver
+CORS_ALLOWED_ORIGINS=https://vectorpress-zeta.vercel.app,https://www.seudominio.com  # dominios adicionais, se houver
 ```
 
 Validação após o deploy:
