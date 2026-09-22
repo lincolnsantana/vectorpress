@@ -25,7 +25,7 @@ O Vectorpress acompanha notícias sobre Inteligência Artificial via RSS, armaze
 
 - Frontend: <https://vectorpress-zeta.vercel.app>
 - API pública: <https://physiopathologic-marlys-unallayable.ngrok-free.dev>
-- Bot Telegram: a definir
+- Bot Telegram: <https://t.me/@Vectorpress_bot>
 
 O backend roda em um homelab pessoal e é publicado por um túnel reverso. Se a API
 estiver fora do ar, o frontend carrega mas não exibe notícias.
